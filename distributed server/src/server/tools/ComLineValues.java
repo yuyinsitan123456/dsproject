@@ -3,31 +3,55 @@ package server.tools;
 import org.kohsuke.args4j.Option;
 
 public class ComLineValues {
-    @Option(
-        required = true,
-        name = "-n",
-        aliases = {"--serverid"},
-        usage = "Server name"
-    )
-    private String serverid;
-    @Option(
-        required = false,
-        name = "-l",
-        aliases = {"--serversConf"},
-        usage = "Server config path"
-    )
-    private String serversConf;
+	@Option(
+			required = true,
+			name = "-n",
+			aliases = {"--serverid"},
+			usage = "Server name"
+			)
+	private String serverid;
+//	@Option(
+//			required = false,
+//			name = "-l",
+//			aliases = {"--serversConf"},
+//			usage = "Server config path"
+//			)
+//	private String serversConf;
 
-    public ComLineValues() {
-    }
+	@Option(
+			required = false,
+			name = "-a",
+			aliases = {"--serversAddress"},
+			usage = "Server Address"
+			)
+	private String serversAddress;
+	
+	@Option(
+			required = false,
+			name = "-p",
+			aliases = {"--serversPort"},
+			usage = "Server Port"
+			)
+	private String serversPort;
 
-    public String getServerid() {
-        return this.serverid;
-    }
+	public ComLineValues() {
+	}
 
-    public String getServersConf() {
-        return this.serversConf;
-    }
+	public String getServerid() {
+		return this.serverid;
+	}
+	
+	public String getServersPort() {
+		return this.serversPort;
+	}
+	
+	public String getServersAddress() {
+		return this.serversAddress;
+	}
+
+//	public String getServersConf() {
+//		return this.serversConf;
+//	}
 
 }
 

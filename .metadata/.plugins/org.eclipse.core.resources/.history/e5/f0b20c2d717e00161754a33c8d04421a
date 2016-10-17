@@ -1,0 +1,415 @@
+package server.state;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import server.config.Config;
+
+public class ManagingThread extends Thread {
+	private Socket socket;
+	private BufferedReader in;
+	private JSONParser parser = new JSONParser();
+	private String identity;
+	private boolean run = true;
+	private MessageSendThread messageSendThread;
+
+	public ManagingThread(Socket socket, MessageSendThread messageSendThread) {
+		try {
+			this.socket = socket;
+			this.messageSendThread=messageSendThread;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void run() {
+		try {
+			JSONObject e;
+			this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+			while(run) {
+				String message;
+				if((message=this.in.readLine())!=null){
+					e = (JSONObject)this.parser.parse(message);
+					System.out.println(e);
+					this.MessageReceive(e);
+				}
+			}
+			this.in.close();
+			this.socket.close();
+			this.messageSendThread.setRun(false);
+		} catch (ParseException e) {
+			try {
+				this.in.close();
+				this.socket.close();
+				this.messageSendThread.setRun(false);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@SuppressWarnings({ "static-access" })
+	public void MessageReceive(JSONObject message) throws IOException, ParseException {
+		String type = (String)message.get("type");
+		ServerState serverState=ServerState.getInstance();
+		if(type.equals("newidentity")) {
+			String identity = (String) message.get("identity");
+			String pattern = "[A-Za-z]{1}[A-Za-z0-9]{2,15}";
+			Pattern r = Pattern.compile(pattern);
+			Matcher m = r.matcher(identity);
+			if(m.matches()&&!serverState.getUserInfoMap().keySet().contains(identity)){
+				Config config=serverState.getConfig();
+				List<ServerInfo> serverInfoList=serverState.getServerInfoList();
+				JSONObject lockIdR=new Message().getLockIdentityRequest(config.getServerid(), identity);
+				for(ServerInfo serverInfo:serverInfoList){
+					Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+					//Get the input/output streams for reading/writing data from/to the socket
+					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+					writer.write(lockIdR + "\n");
+					writer.flush();
+					writer.close();
+					serverSocket.close();
+				}
+				boolean flag=true;
+				while(true){
+					Map<String,Map<String,String>> userInfoVoteSet=ServerState.getInstance().getUserInfoVoteSet();
+					if(userInfoVoteSet.containsKey(identity)){
+						Map<String,String> userInfoVotes=userInfoVoteSet.get(identity);
+						if(userInfoVotes!=null&&userInfoVotes.size()==serverInfoList.size()){
+							for(ServerInfo serverInfo:serverInfoList){
+								flag=flag&&("true".equals(userInfoVotes.get(serverInfo.getServerid())));
+								ServerState.getInstance().deleteUserInfoVoteSet(identity,serverInfo.getServerid());
+							}
+							break;
+						}
+					}
+				}
+				this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
+				JSONObject leaseIdR=new Message().getReleasingIdentity(config.getServerid(), identity);
+				for(ServerInfo serverInfo:serverInfoList){
+					Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+					//Get the input/output streams for reading/writing data from/to the socket
+					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+					writer.write(leaseIdR + "\n");
+					writer.flush();
+					writer.close();
+					serverSocket.close();
+				}
+				System.out.println("the result is :"+flag);
+				if(flag){
+					String currentChatroom = "MainHall-"+config.getServerid();
+					UserInfo userInfo = new UserInfo(identity,currentChatroom,socket,this);
+					this.setIdentity(identity);
+					Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+					Map<String,LocalChatroomInfo> localChatroomInfoMap = serverState.getLocalChatroomInfoMap();
+					LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(currentChatroom);
+					List<String> members = localChatroomInfo.getMembers();
+					if(members!=null){
+						for(String member : members) {
+							userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,"", currentChatroom));
+						}
+					}
+					this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(this.identity,"", currentChatroom));
+					ServerState.getInstance().addUser(userInfo);
+					ServerState.getInstance().getLocalChatroomInfoMap().get(currentChatroom).addMember(identity);
+				}else{
+					this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
+				}
+			}else{
+				this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply("false"));
+			}
+		} else if(type.equals("list")) {
+			List<String> rooms=new ArrayList<String>();
+			for(String room:serverState.getLocalChatroomInfoMap().keySet()){
+				rooms.add(room);
+			}
+			for(String room:serverState.getRemoteChatroomInfoMap().keySet()){
+				rooms.add(room);
+			}
+			this.getMessageSendThread().getMessageQueue().add(new Message().getList(rooms));
+		} else if(type.equals("who")) {
+			Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+			UserInfo userInfo=userInfoMap.get(this.identity);
+			String currentRoom=userInfo.getCurrentChatroom();
+			LocalChatroomInfo localChatroomInfo=serverState.getLocalChatroomInfoMap().get(currentRoom);
+			String owner=localChatroomInfo.getOwnerIdentity();
+			List<String> peoples=localChatroomInfo.getMembers();
+			this.getMessageSendThread().getMessageQueue().add(new Message().getWho(currentRoom, peoples, owner));
+		} else if(type.equals("createroom")) {
+			String roomid = (String) message.get("roomid");
+			System.out.print("roomid:"+roomid);
+			String pattern = "[A-Za-z]{1}[A-Za-z0-9]{2,15}";
+			Pattern r = Pattern.compile(pattern);
+			Matcher m = r.matcher(roomid);
+			UserInfo userInfo=serverState.getUserInfoMap().get(this.identity);
+			String currentRoomId=userInfo.getCurrentChatroom();
+			if(m.matches()&&!this.identity.equals(serverState.getLocalChatroomInfoMap().get(currentRoomId).getOwnerIdentity())&&!serverState.getLocalChatroomInfoMap().containsKey(roomid)&&!serverState.getRemoteChatroomInfoMap().containsKey(roomid)){
+				Config config=serverState.getConfig();
+				List<ServerInfo> serverInfoList=serverState.getServerInfoList();
+				JSONObject lockR=new Message().getLockRoomRequest(config.getServerid(), roomid);
+				for(ServerInfo serverInfo:serverInfoList){
+					Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+					//Get the input/output streams for reading/writing data from/to the socket
+					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+					writer.write(lockR + "\n");
+					writer.flush();
+					writer.close();
+					serverSocket.close();
+				}
+				boolean flag=true;
+				while(true){
+					Map<String,Map<String,String>> chatroomVoteSet=ServerState.getInstance().getChatroomVoteSet();
+					if(chatroomVoteSet.containsKey(roomid)){
+						Map<String,String> chatroomVotes=chatroomVoteSet.get(roomid);
+						if(chatroomVotes.size()==serverInfoList.size()){
+							for(ServerInfo serverInfo:serverInfoList){
+								flag=flag&&(chatroomVotes.get(serverInfo.getServerid())=="true");
+								ServerState.getInstance().deleteChatroomVote(roomid,serverInfo.getServerid());
+							}
+							break;
+						}
+					}
+				}
+				this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid,String.valueOf(flag)));
+				JSONObject leaseIdR=new Message().getReleaseRoomRespone(config.getServerid(),roomid, String.valueOf(flag));
+				for(ServerInfo serverInfo:serverInfoList){
+					Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+					//Get the input/output streams for reading/writing data from/to the socket
+					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+					writer.write(leaseIdR + "\n");
+					writer.flush();
+					writer.close();
+					serverSocket.close();
+				}
+				if(flag){
+					Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+					Map<String,LocalChatroomInfo> localChatroomInfoMap = serverState.getLocalChatroomInfoMap();
+					LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(currentRoomId);
+					List<String> members = localChatroomInfo.getMembers();
+					for(String member : members) {
+						userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, roomid));
+					}
+					ServerState.getInstance().getLocalChatroomInfoMap().get(currentRoomId).addMember(identity);
+					ServerState.getInstance().getUserInfoMap().get(identity).setCurrentChatroom(roomid);
+				}else{
+					this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid, String.valueOf(flag)));
+				}
+			}else{
+				this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid,"false"));
+			}
+		} else if(type.equals("join")) {
+			String roomid = (String) message.get("roomid");
+			UserInfo userInfo=serverState.getUserInfoMap().get(this.identity);
+			String currentRoomId=userInfo.getCurrentChatroom();
+			Map<String,LocalChatroomInfo> localChatroomInfoMap=serverState.getLocalChatroomInfoMap();
+			if(!this.identity.equals(localChatroomInfoMap.get(currentRoomId).getOwnerIdentity())){
+				if(localChatroomInfoMap.keySet().contains(roomid)){
+					Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+					for(String member:localChatroomInfoMap.get(currentRoomId).getMembers()){
+						userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(member,currentRoomId, roomid));
+					}
+					for(String member:localChatroomInfoMap.get(roomid).getMembers()){
+						userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(member,currentRoomId, roomid));
+					}
+					ServerState.getInstance().getLocalChatroomInfoMap().get(currentRoomId).deleteMember(identity);
+					ServerState.getInstance().getLocalChatroomInfoMap().get(roomid).addMember(identity);
+				}else{
+					Map<String,RemoteChatroomInfo> remoteChatroomInfoMap=serverState.getRemoteChatroomInfoMap();
+					if(remoteChatroomInfoMap.keySet().contains(roomid)){
+						ServerInfo serverInfo=remoteChatroomInfoMap.get(roomid).getManagingServer();
+						this.getMessageSendThread().getMessageQueue().add(new Message().getRouteReply(roomid, serverInfo.getServerAddress(),String.valueOf(serverInfo.getClientsPort()) ));
+						Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+						for(String member:localChatroomInfoMap.get(currentRoomId).getMembers()){
+							userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(member,currentRoomId, roomid));
+						}
+						ServerState.getInstance().getLocalChatroomInfoMap().get(currentRoomId).deleteMember(identity);
+					}else{
+						this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, currentRoomId));
+					}
+				}
+			}else{
+				this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, currentRoomId));
+			}
+		} else if(type.equals("deleteroom")) {
+			String roomid = (String) message.get("roomid");
+			Map<String, UserInfo> userInfoMap=serverState.getUserInfoMap();
+			Map<String, LocalChatroomInfo> localChatroomInfoMap=serverState.getLocalChatroomInfoMap();
+			LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(roomid);
+			if(localChatroomInfo!=null&!this.identity.equals(localChatroomInfo.getOwnerIdentity())){
+				this.getMessageSendThread().getMessageQueue().add(new Message().getDeleteReply(roomid, "false"));
+			}else{
+				Config config=serverState.getConfig();
+				String serverId=config.getServerid();
+				List<ServerInfo> serverInfoList=serverState.getServerInfoList();
+				JSONObject roomIdR=new Message().getDeleteRespone(serverId, roomid);
+				for(ServerInfo serverInfo:serverInfoList){
+					Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+					//Get the input/output streams for reading/writing data from/to the socket
+					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+					writer.write(roomIdR + "\n");
+					writer.flush();
+					writer.close();
+					serverSocket.close();
+				}
+				List<String> members=localChatroomInfo.getMembers();
+				for(String changeMember:members){
+					for(String receiveMember:members){
+						userInfoMap.get(receiveMember).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(changeMember,roomid, "MainHall-"+serverId));
+					}
+					for(String receiveMember:localChatroomInfoMap.get("MainHall-"+serverId).getMembers()){
+						userInfoMap.get(receiveMember).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(changeMember,roomid, "MainHall-"+serverId));
+					}
+					ServerState.getInstance().getUserInfoMap().get(changeMember).setCurrentChatroom("MainHall-"+serverId);
+				}
+				this.getMessageSendThread().getMessageQueue().add(new Message().getDeleteReply(roomid, "true"));
+				ServerState.getInstance().getLocalChatroomInfoMap().remove(roomid);
+			}
+		} else if(type.equals("message")) {
+			String content = (String) message.get("content");
+			Map<String, UserInfo> userInfoMap=serverState.getUserInfoMap();
+			UserInfo userInfo=userInfoMap.get(this.identity);
+			String currentRoomId=userInfo.getCurrentChatroom();
+			Map<String,LocalChatroomInfo> localChatroomInfoMap=serverState.getLocalChatroomInfoMap();
+			for(String member:localChatroomInfoMap.get(currentRoomId).getMembers()){
+				userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getMessage(identity, content));
+			}
+		} else if(type.equals("movejoin")) {
+			String former = (String) message.get("former");
+			String roomid = (String) message.get("roomid");
+			String identity = (String) message.get("identity");
+			Config config=serverState.getConfig();
+			Map<String,LocalChatroomInfo> localChatroomInfoMap = ServerState.getInstance().getLocalChatroomInfoMap();
+			LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(roomid);
+			if(localChatroomInfo==null){
+				roomid = "MainHall-"+config.getServerid();
+				localChatroomInfo=localChatroomInfoMap.get(roomid);
+			}
+			UserInfo userInfo = new UserInfo(identity,roomid,socket,this);
+			this.setIdentity(identity);
+			Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+			List<String> members = localChatroomInfo.getMembers();
+			for(String member : members) {
+				userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,former, roomid));
+			}
+			ServerState.getInstance().addUser(userInfo);
+			ServerState.getInstance().getLocalChatroomInfoMap().get(roomid).addMember(identity);
+			this.getMessageSendThread().getMessageQueue().add(new Message().getServerchange("true",config.getServerid()));
+		} else if(type.equals("quit")) {
+			Map<String, UserInfo> userInfoMap=serverState.getUserInfoMap();
+			UserInfo userInfo=userInfoMap.get(this.identity);
+			String currentRoomId=userInfo.getCurrentChatroom();
+			Map<String,LocalChatroomInfo> localChatroomInfoMap=serverState.getLocalChatroomInfoMap();
+			if(!this.identity.equals(localChatroomInfoMap.get(currentRoomId).getOwnerIdentity())){
+				for(String member:localChatroomInfoMap.get(currentRoomId).getMembers()){
+					userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity, currentRoomId, ""));
+				}
+				ServerState.getInstance().deleteUser(identity);
+				ServerState.getInstance().getLocalChatroomInfoMap().get(currentRoomId).deleteMember(identity);
+				this.run=false;
+			}else{
+				Config config=serverState.getConfig();
+				String serverId=config.getServerid();
+				List<String> members=localChatroomInfoMap.get(currentRoomId).getMembers();
+				for(String member:members){
+					userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity, currentRoomId, ""));
+				}
+				ServerState.getInstance().deleteUser(identity);
+				members.remove(identity);
+				this.run=false;
+				List<ServerInfo> serverInfoList=serverState.getServerInfoList();
+				JSONObject roomIdR=new Message().getDeleteRespone(serverId, currentRoomId);
+				for(ServerInfo serverInfo:serverInfoList){
+					Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+					//Get the input/output streams for reading/writing data from/to the socket
+					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+					writer.write(roomIdR + "\n");
+					writer.flush();
+					writer.close();
+					serverSocket.close();
+				}
+				for(String changeMember:members){
+					for(String receiveMember:members){
+						userInfoMap.get(receiveMember).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(changeMember,currentRoomId, "MainHall-"+serverId));
+					}
+					for(String receiveMember:localChatroomInfoMap.get("MainHall-"+serverId).getMembers()){
+						userInfoMap.get(receiveMember).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(changeMember,currentRoomId, "MainHall-"+serverId));
+					}
+					ServerState.getInstance().getUserInfoMap().get(changeMember).setCurrentChatroom("MainHall-"+serverId);
+				}
+				ServerState.getInstance().getLocalChatroomInfoMap().remove(currentRoomId);
+			}
+		}else{
+			Map<String, UserInfo> userInfoMap=serverState.getUserInfoMap();
+			UserInfo userInfo=userInfoMap.get(this.identity);
+			String currentRoomId=userInfo.getCurrentChatroom();
+			Map<String,LocalChatroomInfo> localChatroomInfoMap=serverState.getLocalChatroomInfoMap();
+			if(!this.identity.equals(localChatroomInfoMap.get(currentRoomId).getOwnerIdentity())){
+				for(String member:localChatroomInfoMap.get(currentRoomId).getMembers()){
+					userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity, currentRoomId, ""));
+				}
+				ServerState.getInstance().deleteUser(identity);
+				ServerState.getInstance().getLocalChatroomInfoMap().get(currentRoomId).deleteMember(identity);
+				this.run=false;
+			}else{
+				Config config=serverState.getConfig();
+				String serverId=config.getServerid();
+				List<String> members=localChatroomInfoMap.get(currentRoomId).getMembers();
+				for(String member:members){
+					userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity, currentRoomId, ""));
+				}
+				ServerState.getInstance().deleteUser(identity);
+				members.remove(identity);
+				this.run=false;
+				List<ServerInfo> serverInfoList=serverState.getServerInfoList();
+				JSONObject roomIdR=new Message().getDeleteRespone(serverId, currentRoomId);
+				for(ServerInfo serverInfo:serverInfoList){
+					Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+					//Get the input/output streams for reading/writing data from/to the socket
+					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+					writer.write(roomIdR + "\n");
+					writer.flush();
+					writer.close();
+					serverSocket.close();
+				}
+				for(String changeMember:members){
+					for(String receiveMember:members){
+						userInfoMap.get(receiveMember).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(changeMember,currentRoomId, "MainHall-"+serverId));
+					}
+					for(String receiveMember:localChatroomInfoMap.get("MainHall-"+serverId).getMembers()){
+						userInfoMap.get(receiveMember).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(changeMember,currentRoomId, "MainHall-"+serverId));
+					}
+					ServerState.getInstance().getUserInfoMap().get(changeMember).setCurrentChatroom("MainHall-"+serverId);
+				}
+				ServerState.getInstance().getLocalChatroomInfoMap().remove(currentRoomId);
+			}
+		} 
+	}
+
+	public MessageSendThread getMessageSendThread() {
+		return messageSendThread;
+	}
+
+	public String getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(String identity) {
+		this.identity=identity;
+	}
+}

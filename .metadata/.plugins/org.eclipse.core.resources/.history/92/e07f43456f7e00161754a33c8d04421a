@@ -1,0 +1,35 @@
+package server.state;
+
+import java.util.LinkedList;
+import java.util.List;
+
+public class LocalChatroomInfo extends ChatroomInfo{
+	private String ownerIdentity;
+	private List<String> members;
+
+	public LocalChatroomInfo(String chatroomId) {
+		super(chatroomId);
+	}
+	
+	public LocalChatroomInfo(String chatroomId,String ownerIdentity) {
+		super(chatroomId);
+		this.ownerIdentity = ownerIdentity;
+		this.members =new LinkedList<String>();
+	}
+
+	public String getOwnerIdentity() {
+		return ownerIdentity;
+	}
+
+	public List<String> getMembers() {
+		return members;
+	}
+	
+	public void addMember(String identity) {
+		this.members.add(identity);
+	}
+	
+	public void deleteMember(String identity) {
+		this.members.add(identity);
+	}
+}

@@ -1,0 +1,89 @@
+package server;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+
+import server.config.Config;
+import server.config.ConfigLoader;
+import server.state.ManagingThread;
+import server.state.MessageSendThread;
+import server.tools.ComLineValues;
+
+public class Server {
+
+	public static void main(String[] args) {
+
+		String serverid = null;
+		String serversConf = null;
+		ComLineValues comLineValues = new ComLineValues();
+		CmdLineParser parser = new CmdLineParser(comLineValues);
+
+		try {
+			parser.parseArgument(args);
+			serverid = comLineValues.getServerid();
+			serversConf = comLineValues.getServersConf();
+		} catch (CmdLineException ce) {
+			ce.printStackTrace();
+		}
+
+		// Read configuration in the config file
+		Config config = ConfigLoader.loadConfig(serverid,serversConf);
+
+		int port;
+		int coordinationPort;
+		ServerSocket listeningClientSocket = null;
+		ServerSocket listeningServerSocket = null;
+		try {
+			port =config.getClientsPort();
+			coordinationPort = config.getCoordinationPort();
+			// Create a server socket listening on given port
+			listeningClientSocket = new ServerSocket(port);
+			listeningServerSocket = new ServerSocket(coordinationPort);
+			System.out.println(Thread.currentThread().getName() + 
+					" - Server listening on port "+port+" for a connection");
+
+
+			//Listen for incoming connections for ever
+			while (true) {
+
+				//Accept an incoming server connection request
+				Socket serverSocket = listeningServerSocket.accept();
+				System.out.println(Thread.currentThread().getName() 
+						+ " - server conection accepted");
+				
+				
+				
+				//Accept an incoming client connection request
+				Socket clientSocket = listeningClientSocket.accept();
+				System.out.println(Thread.currentThread().getName() 
+						+ " - Client conection accepted");
+
+				MessageSendThread messageSendThread = new MessageSendThread(clientSocket);
+				messageSendThread.start();
+				ManagingThread managingThread = new ManagingThread(clientSocket,messageSendThread);
+				managingThread.start();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if(listeningClientSocket != null) {
+				try {
+					listeningClientSocket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if(listeningServerSocket != null) {
+				try {
+					listeningServerSocket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+}
