@@ -23,7 +23,7 @@ public class AuthorizeServer {
 
 	public static void main(String[] args) throws IOException {
 
-		int serversPort = 4444;
+		int serversPort = 4441;
 		BufferedReader in;
 		BufferedWriter out;
 		JSONParser parser = new JSONParser();
@@ -32,12 +32,13 @@ public class AuthorizeServer {
 		//Specify the keystore details (this can be specified as VM arguments as well)
 		//the keystore file contains an application's own certificate and private key
 		//keytool -genkey -keystore <keystorename> -keyalg RSA
-		System.setProperty("javax.net.ssl.keyStore","DS.jks");
+		System.setProperty("javax.net.ssl.keyStore","\\DS.jks");
+		System.setProperty("javax.net.ssl.trustStore","\\DS.jks");
 		//Password to access the private key from the keystore file
 		System.setProperty("javax.net.ssl.keyStorePassword","888888");
 
 		// Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
-		System.setProperty("javax.net.debug","all");
+		System.setProperty("javax.net.debug","none");
 
 		try {
 			// Create a server socket listening on given port
@@ -80,8 +81,8 @@ public class AuthorizeServer {
 		if(type.equals("serverList")) {
 			String serverid = (String) message.get("serverid");
 			String serversAddress=(String) message.get("serversAddress");
-			int clientsPort = (int) message.get("clientsPort");
-			int coordinationPort = (int) message.get("coordinationPort");
+			int clientsPort =(int)(long) message.get("clientsPort");
+			int coordinationPort = (int)(long) message.get("coordinationPort");
 			AuthorizeServerState.getInstance().addServerInfo(new CurrentServerInfo(serverid, serversAddress, clientsPort, coordinationPort));
 			List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
 			List<String> sendList = new ArrayList<String>();
@@ -90,8 +91,7 @@ public class AuthorizeServer {
 				sendList.add(e);
 			}
 			JSONObject mas=(JSONObject) new Message().getServerList(sendList);
-			out.write((mas.toJSONString() + "\n"));
-			out.flush();
+			sendCoorMessage(serversAddress,coordinationPort, mas);
 		}else if(type.equals("backnumber")){
 			String serverid = (String) message.get("serverid");
 			Integer number = (Integer) message.get("number");
@@ -137,6 +137,17 @@ public class AuthorizeServer {
 			}
 		}
 	}
+
+	public static void sendCoorMessage(String address,int port,JSONObject message) throws IOException{
+		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+		writer.write(message + "\n");
+		writer.flush();
+		writer.close();
+		serverSocket.close();
+	}
+
 	public static void sendCoorMessage(List<CurrentServerInfo> serverList,JSONObject message) throws IOException{
 		for(CurrentServerInfo serverInfo:serverList){
 			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();

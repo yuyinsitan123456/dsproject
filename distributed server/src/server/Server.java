@@ -51,12 +51,13 @@ public class Server  {
 		//Specify the keystore details (this can be specified as VM arguments as well)
 		//the keystore file contains an application's own certificate and private key
 		//keytool -genkey -keystore <keystorename> -keyalg RSA
-		System.setProperty("javax.net.ssl.keyStore","DS.jks");
+		System.setProperty("javax.net.ssl.keyStore","\\DS.jks");
+		System.setProperty("javax.net.ssl.trustStore","\\DS.jks");
 		//Password to access the private key from the keystore file
 		System.setProperty("javax.net.ssl.keyStorePassword","888888");
 
 		// Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
-		System.setProperty("javax.net.debug","all");
+		System.setProperty("javax.net.debug","none");
 
 		try {
 			
