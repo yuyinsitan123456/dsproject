@@ -1,9 +1,11 @@
 package server.state;
 
 import java.util.List;
+import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
 @SuppressWarnings("unchecked")
 public class Message {
 	// for editing message
@@ -159,4 +161,69 @@ public class Message {
 		serverchange.put("serverid", serverid);
 		return serverchange;
 	}
+	
+	public static JSONObject getServerList(List<String> serverList) {
+		JSONObject list = new JSONObject();
+		list.put("type", "serverlist");
+		JSONArray servers=new JSONArray();
+		for(String server:serverList){
+			servers.add(server);
+		}
+		list.put("servers", servers);
+		return list;
+	}
+	
+	public static JSONObject getUserAuthorizeSuccess(String serverid, String serverAddress, int coordinationPort,String id){
+		JSONObject serverchange = new JSONObject();
+		serverchange.put("type", "login");
+		serverchange.put("approved", true);
+		serverchange.put("serverid", serverid);
+		serverchange.put("serverAddress", serverAddress);
+		serverchange.put("coordinationPort", coordinationPort);
+		serverchange.put("id", id);
+		return serverchange;
+	}
+	
+	public static JSONObject getUserAuthorizeFail(){
+		JSONObject serverchange = new JSONObject();
+		serverchange.put("type", "serverrequire");
+		serverchange.put("approved", false);
+		return serverchange;
+	}
+	
+	public static JSONObject getHello(String serverid, String serverAddress,int clientsPort, int coordinationPort){
+		JSONObject serverchange = new JSONObject();
+		serverchange.put("type", "helloServer");
+		serverchange.put("serverid", serverid);
+		serverchange.put("serverAddress", serverAddress);
+		serverchange.put("clientsPort", clientsPort);
+		serverchange.put("coordinationPort", coordinationPort);
+		return serverchange;
+	}
+	
+	public static JSONObject getHelloagain(Set<String> remoteRooms,String serverid){
+		JSONObject serverchange = new JSONObject();
+		serverchange.put("type", "helloagain");
+		JSONArray roomlist=new JSONArray();
+		for(String room:remoteRooms){
+			roomlist.add(room);
+		}
+		serverchange.put("serverid",serverid);
+		serverchange.put("roomlist",roomlist);
+		return serverchange;
+	}
+	
+	public static JSONObject requireUserNumber(){
+		JSONObject serverchange = new JSONObject();
+		serverchange.put("type", "usernumber");
+		return serverchange;
+	}
+	public static JSONObject getUsernumber(String serverid,int number){
+		JSONObject serverchange = new JSONObject();
+		serverchange.put("type", "backnumber");
+		serverchange.put("serverid", serverid);
+		serverchange.put("number", number);
+		return serverchange;
+	}
+	
 }

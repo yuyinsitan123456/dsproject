@@ -1,0 +1,40 @@
+package server;
+
+import java.net.Socket;
+
+public class AvailableUserInfo {
+	private String name;
+	private String password;
+
+	public AvailableUserInfo(String name, String password) {
+		super();
+		this.name = name;
+		this.password = password;
+	}
+	
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name=name;
+	}
+
+	public String getCurrentChatroom() {
+		return currentChatroom;
+	}
+	
+	public UserInfo setCurrentChatroom(String currentChatroom) {
+		this.currentChatroom=currentChatroom;
+		return this;
+	}
+
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public ManagingThread getManagingThread() {
+		return managingThread;
+	}
+}

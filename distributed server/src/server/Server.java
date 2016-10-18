@@ -5,39 +5,24 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-
 import server.config.Config;
 import server.config.ConfigLoader;
 import server.state.ManagingThread;
 import server.state.MessageSendThread;
-import server.tools.ComLineValues;
 
-public class Server {
+public class Server  {
 
 	public static void main(String[] args) throws IOException {
 
 		String serverid = null;
-		String serversConf = null;
-		ComLineValues comLineValues = new ComLineValues();
-		CmdLineParser parser = new CmdLineParser(comLineValues);
-
-		try {
-			parser.parseArgument(args);
-			serverid = comLineValues.getServerid();
-			serversConf = comLineValues.getServersConf();
-		} catch (CmdLineException ce) {
-			ce.printStackTrace();
-		}
+		String serversAddress=null;
+		int serversPort = 4443;
+		int coordinationPort = 3333;
 
 		// Read configuration in the config file
-		Config config = ConfigLoader.loadConfig(serverid,serversConf);
-		int port;
-		int coordinationPort;
+		Config config = ConfigLoader.loadConfig(serverid,serversAddress,serversPort,coordinationPort);
 		SSLServerSocket listeningServerSocket = null;
 		SSLServerSocket listeningClientSocket =null;
-
 		//Specify the keystore details (this can be specified as VM arguments as well)
 		//the keystore file contains an application's own certificate and private key
 		//keytool -genkey -keystore <keystorename> -keyalg RSA
@@ -49,13 +34,13 @@ public class Server {
 		System.setProperty("javax.net.debug","all");
 
 		try {
-			port =config.getClientsPort();
+			serversPort =config.getClientsPort();
 			coordinationPort = config.getCoordinationPort();
 			// Create a server socket listening on given port
 			//Create SSL server socket
 			SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory
 					.getDefault();
-			listeningClientSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(port);
+			listeningClientSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(serversPort);
 
 			listeningServerSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(coordinationPort);
 			ServerListening ServerListening = new ServerListening(listeningServerSocket);

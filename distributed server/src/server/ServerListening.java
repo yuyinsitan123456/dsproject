@@ -7,9 +7,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -42,7 +45,9 @@ public class ServerListening  extends Thread  {
 				System.out.println(Thread.currentThread().getName() 
 						+ " - server conection accepted");
 				this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+				this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 				MessageReceive((JSONObject)this.parser.parse(this.in.readLine()));
+				this.out.close();
 				this.in.close();
 				socket.close();
 			}
@@ -174,12 +179,54 @@ public class ServerListening  extends Thread  {
 		} else if(type.equals("deleteroom")){
 			String roomid = (String) message.get("roomid");
 			ServerState.getInstance().deleteRemoteChatroomInfo(roomid);
+		} else if(type.equals("serverlist")){
+			JSONArray serverlist = (JSONArray) message.get("servers");
+			List<ServerInfo> serverInfoList=new ArrayList<ServerInfo>();
+			for (int i = 0; i < serverlist.size(); i++) {
+				String server = (String) serverlist.get(i);
+				String[] serverinfo=server.split(" ");
+				ServerInfo serverInfo = new ServerInfo(serverinfo[0],serverinfo[1],Integer.valueOf(serverinfo[2]),Integer.valueOf(serverinfo[3]));
+				serverInfoList.add(serverInfo);
+			}
+			JSONObject mas=new Message().getHello(config.getServerid(),config.getServerAddress(),config.getClientsPort(),config.getCoordinationPort());
+			sendCoorMessage(serverInfoList,mas);
+			ServerState.getInstance().initServerList(serverlist);
+		} else if(type.equals("helloServer")){
+			String serverid = (String) message.get("serverid");
+			String serversAddress=(String) message.get("serversAddress");
+			int clientsPort = (int) message.get("clientsPort");
+			int coordinationPort = (int) message.get("coordinationPort");
+			ServerState.getInstance().addServerInfo(serverid,serversAddress,clientsPort,coordinationPort);
+			JSONObject mas=new Message().getHelloagain(serverState.getLocalChatroomInfoMap().keySet(),serverid);
+			Socket serverSocket = new Socket(serversAddress,coordinationPort);
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+			writer.write(mas + "\n");
+			writer.flush();
+			writer.close();
+			serverSocket.close();
+		} else if(type.equals("helloagain")){
+			String serverid = (String) message.get("serverid");
+			JSONArray roomlist=(JSONArray) message.get("roomlist");
+			ServerState.getInstance().addRemoteroom(serverid,roomlist);
+		} else if(type.equals("usernumber")){
+			JSONObject mas=new Message().getUsernumber(config.getServerid(),ServerState.getInstance().getUserInfoMap().keySet().size());
+			MessageSend(mas);
 		}
 	}
 
-	public void MessageSend(Socket socket,JSONObject msg) throws IOException {
-		this.out=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
+	public void MessageSend(JSONObject msg) throws IOException {
 		this.out.write(msg.toJSONString() + "\n");
 		this.out.flush();
+	}
+
+	public void sendCoorMessage(List<ServerInfo> serverInfoList,JSONObject message) throws UnknownHostException, IOException{
+		for(ServerInfo serverInfo:serverInfoList){
+			Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+			writer.write(message + "\n");
+			writer.flush();
+			writer.close();
+			serverSocket.close();
+		}
 	}
 }

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.json.simple.JSONArray;
+
 import server.config.Config;
 
 public class ServerState {
@@ -293,5 +296,41 @@ public class ServerState {
 		}
 		deleteUser(identity);
 		deleteChatroom(currentRoomId);
+	}
+
+	public synchronized void addServerList(JSONArray serverlist) {
+		for (int i = 0; i < serverlist.size(); i++) {
+			String server = (String) serverlist.get(i);
+			String[] serverinfo=server.split(" ");
+			ServerInfo serverInfo = new ServerInfo(serverinfo[0],serverinfo[1],Integer.valueOf(serverinfo[2]),Integer.valueOf(serverinfo[3]));
+			serverInfoList.add(serverInfo);
+		}
+	}
+	public synchronized void initServerList(JSONArray serverlist) {
+		for (int i = 0; i < serverlist.size(); i++) {
+			String server = (String) serverlist.get(i);
+			String[] serverinfo=server.split(" ");
+			ServerInfo serverInfo = new ServerInfo(serverinfo[0],serverinfo[1],Integer.valueOf(serverinfo[2]),Integer.valueOf(serverinfo[3]));
+			serverInfoList.add(serverInfo);
+		}
+		localChatroomInfoMap.put("MainHall-"+config.getServerid(),new LocalChatroomInfo("MainHall-"+config.getServerid(),"") );
+	}
+	public synchronized void addServerInfo(String serverid, String serverAddress, int clientsPort, int coordinationPort) {
+		ServerInfo serverInfo = new ServerInfo(serverid,serverAddress,clientsPort,coordinationPort);
+		serverInfoList.add(serverInfo);
+		remoteChatroomInfoMap.put("MainHall-"+serverid,new RemoteChatroomInfo("MainHall-"+serverid,serverInfo));
+	}
+	public synchronized void addRemoteroom(String serverid,JSONArray roomlist) {
+		for (int i = 0; i < roomlist.size(); i++) {
+			String room = (String) roomlist.get(i);
+			ServerInfo currentserverInfo = null;
+			for(ServerInfo serverInfo:serverInfoList){
+				if(serverid.equals(serverInfo.getServerid())){
+					currentserverInfo = serverInfo;
+					break;
+				}
+			}
+			remoteChatroomInfoMap.put(room,new RemoteChatroomInfo(room,currentserverInfo));
+		}
 	}
 }
