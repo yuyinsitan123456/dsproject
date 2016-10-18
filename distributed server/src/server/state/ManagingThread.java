@@ -5,13 +5,15 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -19,14 +21,14 @@ import org.json.simple.parser.ParseException;
 import server.config.Config;
 
 public class ManagingThread extends Thread {
-	private Socket socket;
+	private SSLSocket socket;
 	private BufferedReader in;
 	private JSONParser parser = new JSONParser();
 	private String identity;
 	private boolean run = true;
 	private MessageSendThread messageSendThread;
 
-	public ManagingThread(Socket socket, MessageSendThread messageSendThread) {
+	public ManagingThread(SSLSocket socket, MessageSendThread messageSendThread) {
 		try {
 			this.socket = socket;
 			this.messageSendThread=messageSendThread;
@@ -299,9 +301,10 @@ public class ManagingThread extends Thread {
 		this.identity=identity;
 	}
 
-	public void sendCoorMessage(List<ServerInfo> serverInfoList,JSONObject message) throws UnknownHostException, IOException{
+	public void sendCoorMessage(List<ServerInfo> serverInfoList,JSONObject message) throws IOException{
 		for(ServerInfo serverInfo:serverInfoList){
-			Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
 			writer.write(message + "\n");
 			writer.flush();
@@ -311,7 +314,7 @@ public class ManagingThread extends Thread {
 	}
 
 	@SuppressWarnings("static-access")
-	public void quit(String identity) throws UnknownHostException, IOException{
+	public void quit(String identity) throws IOException{
 		ServerState serverState=ServerState.getInstance();
 		Map<String, UserInfo> userInfoMap=serverState.getUserInfoMap();
 		UserInfo userInfo=userInfoMap.get(identity);

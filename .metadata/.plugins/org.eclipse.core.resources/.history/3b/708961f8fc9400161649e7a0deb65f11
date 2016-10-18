@@ -1,0 +1,62 @@
+package server.config;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+
+import server.state.LocalChatroomInfo;
+import server.state.RemoteChatroomInfo;
+import server.state.ServerInfo;
+import server.state.ServerState;
+
+public class ConfigLoader {
+
+	public static Config loadConfig(String serverName,String path) {
+
+		Config config = null;
+		try {
+
+			//Open the file reader
+			BufferedReader fileReader = new BufferedReader(new FileReader(path));
+
+			//Read the line from the file
+			String configLine = null;
+
+			while((configLine=fileReader.readLine())!= null) {
+				//Split the string into substrings delimited by tabs
+				String[] configParams = configLine.split("\t");
+				//We should have 4 substrings,one for id, one for the address and two for the port
+				if(configParams.length == 4) {
+					//the serverid is the first parameter in the line
+					String serverid = configParams[0];
+					//the serverAddress is the 2nd parameter in the line
+					String serverAddress = configParams[1];
+					//the clientsPort and coordinationPort are the last two parameter in the line
+					int clientsPort = Integer.parseInt(configParams[2]);
+					int coordinationPort = Integer.parseInt(configParams[3]);
+					if(serverName.equals(serverid)){
+						config = new Config(serverid,serverAddress,clientsPort,coordinationPort);
+						ServerState serverState = ServerState.getInstance();
+						serverState.setConfig(config);
+						serverState.getLocalChatroomInfoMap().put("MainHall-"+serverid,new LocalChatroomInfo("MainHall-"+serverid,"") );
+					}else{
+						ServerInfo serverInfo = new ServerInfo(serverid,serverAddress,clientsPort,coordinationPort);
+						ServerState serverState = ServerState.getInstance();
+						serverState.getServerInfoList().add(serverInfo);
+						serverState.getRemoteChatroomInfoMap().put("MainHall-"+serverid,new RemoteChatroomInfo("MainHall-"+serverid,serverInfo));
+					}
+				}
+			}
+			fileReader.close();	
+			
+//			config = new Config(serverName,serverAddress,clientsPort,coordinationPort);
+//			ServerState serverState = ServerState.getInstance();
+//			serverState.setConfig(config);
+//			serverState.getLocalChatroomInfoMap().put("MainHall-"+serverName,new LocalChatroomInfo("MainHall-"+serverName,"") );
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		return config;
+	}
+
+}

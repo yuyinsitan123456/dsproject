@@ -13,6 +13,8 @@ public class ServerState {
 	//store different server state
 	private static ServerState instance;
 	private Config config;
+	private String centraladdress;
+	private int centralport;
 	private List<ServerInfo> serverInfoList;
 	private Map<String,UserInfo> userInfoMap;
 	private Map<String,String> lockedUserSet;
@@ -46,6 +48,22 @@ public class ServerState {
 
 	public void setConfig(Config config) {
 		this.config = config;
+	}
+	
+	public String getCentraladdress() {
+		return centraladdress;
+	}
+
+	public void setCentraladdress(String centraladdress) {
+		this.centraladdress = centraladdress;
+	}
+	
+	public int getCentralport() {
+		return centralport;
+	}
+
+	public void setCentralport(int centralport) {
+		this.centralport = centralport;
 	}
 
 	public List<ServerInfo> getServerInfoList() {

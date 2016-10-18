@@ -2,19 +2,20 @@ package server.state;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import javax.net.ssl.SSLSocket;
 
 import org.json.simple.JSONObject;
 
 public class MessageSendThread extends Thread {
 	private boolean run = true;
 	private DataOutputStream out;
-	private Socket socket;
+	private SSLSocket socket;
 	private BlockingQueue<JSONObject> messageQueue;
 
-	public MessageSendThread(Socket socket) throws IOException {
+	public MessageSendThread(SSLSocket socket) throws IOException {
 		this.socket=socket;
 		this.out = new DataOutputStream(socket.getOutputStream());
 		this.messageQueue= new LinkedBlockingQueue<JSONObject>();

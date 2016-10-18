@@ -1,0 +1,48 @@
+package server.state;
+
+public class UserInfo {
+	private String identity;
+	private String currentChatroom;
+	private SSLSocket socket ;
+	private ManagingThread managingThread;
+
+	public UserInfo(String currentChatroom, SSLSocket socket, ManagingThread managingThread) {
+		super();
+		this.currentChatroom = currentChatroom;
+		this.socket = socket;
+		this.managingThread = managingThread;
+	}
+	
+	public UserInfo(String identity,String currentChatroom, Socket socket, ManagingThread managingThread) {
+		super();
+		this.identity = identity;
+		this.currentChatroom = currentChatroom;
+		this.socket = socket;
+		this.managingThread = managingThread;
+	}
+
+	public String getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(String identity) {
+		this.identity=identity;
+	}
+
+	public String getCurrentChatroom() {
+		return currentChatroom;
+	}
+	
+	public UserInfo setCurrentChatroom(String currentChatroom) {
+		this.currentChatroom=currentChatroom;
+		return this;
+	}
+
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public ManagingThread getManagingThread() {
+		return managingThread;
+	}
+}

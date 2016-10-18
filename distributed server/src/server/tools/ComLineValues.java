@@ -10,13 +10,13 @@ public class ComLineValues {
 			usage = "Server name"
 			)
 	private String serverid;
-//	@Option(
-//			required = false,
-//			name = "-l",
-//			aliases = {"--serversConf"},
-//			usage = "Server config path"
-//			)
-//	private String serversConf;
+	@Option(
+			required = false,
+			name = "-l",
+			aliases = {"--serversConf"},
+			usage = "Server config path"
+			)
+	private String serversConf;
 
 	@Option(
 			required = false,
@@ -60,9 +60,9 @@ public class ComLineValues {
 	public int getCoordinationPort() {
 		return this.coordinationPort;
 	}
-//	public String getServersConf() {
-//		return this.serversConf;
-//	}
+	public String getServersConf() {
+		return this.serversConf;
+	}
 
 }
 

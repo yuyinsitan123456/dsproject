@@ -1,21 +1,21 @@
 package server.state;
 
-import java.net.Socket;
+import javax.net.ssl.SSLSocket;
 
 public class UserInfo {
 	private String identity;
 	private String currentChatroom;
-	private Socket socket ;
+	private SSLSocket socket ;
 	private ManagingThread managingThread;
 
-	public UserInfo(String currentChatroom, Socket socket, ManagingThread managingThread) {
+	public UserInfo(String currentChatroom, SSLSocket socket, ManagingThread managingThread) {
 		super();
 		this.currentChatroom = currentChatroom;
 		this.socket = socket;
 		this.managingThread = managingThread;
 	}
 	
-	public UserInfo(String identity,String currentChatroom, Socket socket, ManagingThread managingThread) {
+	public UserInfo(String identity,String currentChatroom, SSLSocket socket, ManagingThread managingThread) {
 		super();
 		this.identity = identity;
 		this.currentChatroom = currentChatroom;
@@ -40,7 +40,7 @@ public class UserInfo {
 		return this;
 	}
 
-	public Socket getSocket() {
+	public SSLSocket getSocket() {
 		return socket;
 	}
 

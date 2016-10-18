@@ -5,8 +5,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +12,7 @@ import java.util.Map;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -33,7 +32,7 @@ public class AuthorizeServer {
 		//Specify the keystore details (this can be specified as VM arguments as well)
 		//the keystore file contains an application's own certificate and private key
 		//keytool -genkey -keystore <keystorename> -keyalg RSA
-		System.setProperty("javax.net.ssl.keyStore","D:\\DS.jks");
+		System.setProperty("javax.net.ssl.keyStore","DS.jks");
 		//Password to access the private key from the keystore file
 		System.setProperty("javax.net.ssl.keyStorePassword","888888");
 
@@ -138,9 +137,10 @@ public class AuthorizeServer {
 			}
 		}
 	}
-	public static void sendCoorMessage(List<CurrentServerInfo> serverList,JSONObject message) throws UnknownHostException, IOException{
+	public static void sendCoorMessage(List<CurrentServerInfo> serverList,JSONObject message) throws IOException{
 		for(CurrentServerInfo serverInfo:serverList){
-			Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
 			writer.write(message + "\n");
 			writer.flush();

@@ -5,12 +5,13 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,12 +24,12 @@ import server.state.ServerInfo;
 import server.state.ServerState;
 
 public class ServerListening  extends Thread  {
-	private ServerSocket listeningServerSocket;
+	private SSLServerSocket listeningServerSocket;
 	private BufferedReader in;
 	private BufferedWriter out;
 	private JSONParser parser = new JSONParser();
 
-	public ServerListening(ServerSocket serverSocket) {
+	public ServerListening(SSLServerSocket serverSocket) {
 		try {
 			this.listeningServerSocket = serverSocket;
 		} catch (Exception e) {
@@ -37,11 +38,11 @@ public class ServerListening  extends Thread  {
 	}
 	@Override
 	public void run() {
-		Socket socket=null;
+		SSLSocket socket=null;
 		try {
 			//keep listening other servers message
 			while(true) {
-				socket=listeningServerSocket.accept();
+				socket=(SSLSocket)listeningServerSocket.accept();
 				System.out.println(Thread.currentThread().getName() 
 						+ " - server conection accepted");
 				this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
@@ -91,12 +92,7 @@ public class ServerListening  extends Thread  {
 					JSONObject lockIdR=new Message().getLockIdentityResponse(config.getServerid(), lockidentity, "false");
 					for(ServerInfo serverInfo:serverInfoList){
 						if(serverid.equals(serverInfo.getServerid())){
-							Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
-							BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
-							writer.write(lockIdR + "\n");
-							writer.flush();
-							writer.close();
-							serverSocket.close();
+							sendCoorMessage(serverInfo.getServerAddress(),serverInfo.getCoordinationPort(),lockIdR);
 							break;
 						}
 					}
@@ -105,12 +101,7 @@ public class ServerListening  extends Thread  {
 					ServerState.getInstance().addLockedUser(lockidentity, serverid);
 					for(ServerInfo serverInfo:serverInfoList){
 						if(serverid.equals(serverInfo.getServerid())){
-							Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
-							BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
-							writer.write(lockIdR + "\n");
-							writer.flush();
-							writer.close();
-							serverSocket.close();
+							sendCoorMessage(serverInfo.getServerAddress(),serverInfo.getCoordinationPort(),lockIdR);
 							break;
 						}
 					}
@@ -137,12 +128,7 @@ public class ServerListening  extends Thread  {
 					JSONObject lockIdR=new Message().getLockRoomRespone(config.getServerid(), lockroomid, "false");
 					for(ServerInfo serverInfo:serverInfoList){
 						if(serverid.equals(serverInfo.getServerid())){
-							Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
-							BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
-							writer.write(lockIdR + "\n");
-							writer.flush();
-							writer.close();
-							serverSocket.close();
+							sendCoorMessage(serverInfo.getServerAddress(),serverInfo.getCoordinationPort(),lockIdR);
 							break;
 						}
 					}
@@ -151,12 +137,7 @@ public class ServerListening  extends Thread  {
 					ServerState.getInstance().addLockedChatroom(lockroomid, serverid);
 					for(ServerInfo serverInfo:serverInfoList){
 						if(serverid.equals(serverInfo.getServerid())){
-							Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
-							BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
-							writer.write(lockIdR + "\n");
-							writer.flush();
-							writer.close();
-							serverSocket.close();
+							sendCoorMessage(serverInfo.getServerAddress(),serverInfo.getCoordinationPort(),lockIdR);
 							break;
 						}
 					}
@@ -198,12 +179,7 @@ public class ServerListening  extends Thread  {
 			int coordinationPort = (int) message.get("coordinationPort");
 			ServerState.getInstance().addServerInfo(serverid,serversAddress,clientsPort,coordinationPort);
 			JSONObject mas=new Message().getHelloagain(serverState.getLocalChatroomInfoMap().keySet(),serverid);
-			Socket serverSocket = new Socket(serversAddress,coordinationPort);
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
-			writer.write(mas + "\n");
-			writer.flush();
-			writer.close();
-			serverSocket.close();
+			sendCoorMessage(serversAddress,coordinationPort,mas);
 		} else if(type.equals("helloagain")){
 			String serverid = (String) message.get("serverid");
 			JSONArray roomlist=(JSONArray) message.get("roomlist");
@@ -219,9 +195,20 @@ public class ServerListening  extends Thread  {
 		this.out.flush();
 	}
 
-	public void sendCoorMessage(List<ServerInfo> serverInfoList,JSONObject message) throws UnknownHostException, IOException{
+	public void sendCoorMessage(String address,int port,JSONObject message) throws IOException{
+		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+		writer.write(message + "\n");
+		writer.flush();
+		writer.close();
+		serverSocket.close();
+	}
+	
+	public void sendCoorMessage(List<ServerInfo> serverInfoList,JSONObject message) throws IOException{
 		for(ServerInfo serverInfo:serverInfoList){
-			Socket serverSocket = new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
+			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
 			writer.write(message + "\n");
 			writer.flush();

@@ -186,7 +186,7 @@ public class Message {
 	
 	public static JSONObject getUserAuthorizeFail(){
 		JSONObject serverchange = new JSONObject();
-		serverchange.put("type", "serverrequire");
+		serverchange.put("type", "login");
 		serverchange.put("approved", false);
 		return serverchange;
 	}
@@ -223,6 +223,16 @@ public class Message {
 		serverchange.put("type", "backnumber");
 		serverchange.put("serverid", serverid);
 		serverchange.put("number", number);
+		return serverchange;
+	}
+	
+	public static JSONObject requireServerlist(String serverid,String serversAddress,int clientsPort,int coordinationPort){
+		JSONObject serverchange = new JSONObject();
+		serverchange.put("type", "serverList");
+		serverchange.put("serverid", serverid);
+		serverchange.put("serversAddress", serversAddress);
+		serverchange.put("clientsPort", clientsPort);
+		serverchange.put("coordinationPort", coordinationPort);
 		return serverchange;
 	}
 	
