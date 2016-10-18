@@ -187,6 +187,12 @@ public class ServerListening  extends Thread  {
 		} else if(type.equals("usernumber")){
 			JSONObject mas=new Message().getUsernumber(config.getServerid(),ServerState.getInstance().getUserInfoMap().keySet().size());
 			MessageSend(mas);
+		}else if(type.equals("heartbeat")){
+			JSONObject heartbeat = new JSONObject();
+			heartbeat.put("type", "heartbeat");
+			heartbeat.put("working", true);
+			writer.write(heartbeat.toJSONString() + "\n");
+			writer.flush();
 		}
 	}
 
