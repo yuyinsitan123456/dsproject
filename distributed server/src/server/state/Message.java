@@ -173,14 +173,14 @@ public class Message {
 		return list;
 	}
 	
-	public static JSONObject getUserAuthorizeSuccess(String serverid, String serverAddress, int coordinationPort,String id){
+	public static JSONObject getUserAuthorizeSuccess(String serverid, String serverAddress, int coordinationPort,String ticket){
 		JSONObject serverchange = new JSONObject();
 		serverchange.put("type", "login");
 		serverchange.put("approved", true);
 		serverchange.put("serverid", serverid);
 		serverchange.put("serverAddress", serverAddress);
 		serverchange.put("coordinationPort", coordinationPort);
-		serverchange.put("id", id);
+		serverchange.put("ticket", ticket);
 		return serverchange;
 	}
 	
@@ -234,6 +234,13 @@ public class Message {
 		serverchange.put("clientsPort", clientsPort);
 		serverchange.put("coordinationPort", coordinationPort);
 		return serverchange;
+	}
+	
+	public static JSONObject getHeartbeat(boolean working){
+		JSONObject heartbeat = new JSONObject();
+		heartbeat.put("type", "heartbeat");
+		heartbeat.put("working", working);
+		return heartbeat;
 	}
 	
 }

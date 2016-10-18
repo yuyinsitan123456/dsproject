@@ -48,6 +48,9 @@ public class AuthorizeServer {
 
 			listeningServerSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(serversPort);
 			SSLSocket serverSocket =null;
+			
+			new Heartbeat().start();
+			
 			while (true) {
 
 				//Accept an incoming client connection request

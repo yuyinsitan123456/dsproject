@@ -1,0 +1,67 @@
+package server;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.List;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+public class Heartbeat extends Thread {
+
+
+	public  Heartbeat(){
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public void run() {
+		while (true) {
+			try {
+				Thread.sleep(8000);
+			} catch(InterruptedException ex) {
+				Thread.currentThread().interrupt();
+			}
+			List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
+			for (CurrentServerInfo serverInfo : serverList) {
+				String serverId = serverInfo.getServerid();
+				String hostName = serverInfo.getServerAddress();
+				int serverPort = serverInfo.getCoordinationPort();
+				SSLSocket sslSocket = null;
+				try{
+					SSLSocketFactory sslSocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+					sslSocket = (SSLSocket) sslSocketfactory.createSocket(hostName, serverPort);
+					DataOutputStream output =new DataOutputStream(sslSocket.getOutputStream());
+					JSONObject HBMessage = new JSONObject();
+					HBMessage.put("type", "heartbeat");
+					output.write((HBMessage.toJSONString() + "\n").getBytes("UTF-8"));
+					output.flush();
+					sslSocket.setSoTimeout(8000);
+					JSONParser parser = new JSONParser();
+					DataInputStream input = new DataInputStream(sslSocket.getInputStream());
+					JSONObject message = (JSONObject) parser.parse(input.readLine());
+					Boolean isWorking = Boolean.valueOf(String.valueOf(message.get("working")));
+					if(!isWorking){
+						AuthorizeServerState.getInstance().deleteServer(serverId);
+					}
+					input.close();
+					output.close();
+					sslSocket.close();
+				} catch (Exception e) {
+					AuthorizeServerState.getInstance().deleteServer(serverId);
+				} finally {
+					if (sslSocket != null) {
+						try {
+							sslSocket.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+	}
+}

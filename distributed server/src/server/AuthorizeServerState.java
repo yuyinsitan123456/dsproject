@@ -60,5 +60,14 @@ public class AuthorizeServerState {
 	public void deleteServerInfo(CurrentServerInfo currentServerInfo) {
 		serverInfoList.remove(currentServerInfo);
 	}
+	
+	public void deleteServer(String serverid) {
+		for(CurrentServerInfo currentServerInfo:serverInfoList){
+			if(serverid.equals(currentServerInfo.getServerid())){
+				serverInfoList.remove(currentServerInfo);
+				break;
+			}
+		}
+	}
 
 }

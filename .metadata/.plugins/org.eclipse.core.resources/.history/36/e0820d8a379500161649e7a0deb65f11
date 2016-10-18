@@ -1,0 +1,66 @@
+package server;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.net.ssl.SSLServerSocketFactory;
+
+public class Heartbeat extends Thread {
+
+
+	public  Heartbeat(){
+
+	}
+
+	public void run() {
+		while (true) {
+			try {
+				Thread.sleep(8000);
+			} catch(InterruptedException ex) {
+				Thread.currentThread().interrupt();
+			}
+			JSONObject HBMessage = new JSONObject();
+			HBMessage.put("type", "heartbeat");
+
+			JSONParser parser = new JSONParser();
+
+			List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
+			for (CurrentServerInfo serverInfo : serverList) {
+				String serverId = serverInfo.getServerid();
+				String hostName = serverInfo.getServerAddress();
+				int serverPort = serverInfo.getCoordinationPort();
+				SSLSocket sslSocket = null;
+				try{
+					SSLServerSocketFactory sslSocketfactory = (SSLServerSocketFactory) sslSocketFactory.getDefault();
+					sslSocket = (SSLSocket) sslSocketfactory.createSocket(hostName, serverPort);
+
+					DataInputStream input = new DataInputStream(sslSocket.getInputStream());
+					DataOutputStream output =new DataOutputStream(sslSocket.getOutputStream());
+
+					output.write((HBMessage.toJSONString() + "\n").getBytes("UTF-8"));
+					output.flush();
+					sslSocket.setSoTimeout(8000);
+					JSONObject message;
+					message = (JSONObject) parser.parse(input.readLine());
+					Boolean isWorking = Boolean.valueOf(String.valueOf(message.get("working")));
+					if(!isWorking){
+						server.deleteServer(serverId);
+					}
+				} catch (Exception e) {
+					server.deleteServer(serverId);
+				} finally {
+					if (sslSocket != null) {
+						try {
+							sslSocket.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+	}
+}
