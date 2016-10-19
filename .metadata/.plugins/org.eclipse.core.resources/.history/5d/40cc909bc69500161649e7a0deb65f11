@@ -23,7 +23,7 @@ public class Heartbeat extends Thread {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
-		System.setProperty("javax.net.ssl.trustStore","DS.jks");
+		System.setProperty("javax.net.ssl.trustStore","\\DS.jks");
 		System.setProperty("javax.net.debug","none");
 		while (true) {
 			try {
@@ -45,7 +45,7 @@ public class Heartbeat extends Thread {
 					BufferedWriter output = new BufferedWriter(new OutputStreamWriter(sslSocket.getOutputStream(), "UTF-8"));
 					JSONObject HBMessage = new JSONObject();
 					HBMessage.put("type", "heartbeat");
-					output.write((HBMessage + "\n"));
+					output.write((HBMessage.toJSONString() + "\n"));
 					output.flush();
 					output.close();
 					sslSocket.close();

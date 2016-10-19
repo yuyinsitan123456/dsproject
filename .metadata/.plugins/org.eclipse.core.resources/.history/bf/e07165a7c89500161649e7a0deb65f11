@@ -23,7 +23,7 @@ public class Heartbeat extends Thread {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
-		System.setProperty("javax.net.ssl.trustStore","DS.jks");
+		System.setProperty("javax.net.ssl.trustStore","\\DS.jks");
 		System.setProperty("javax.net.debug","none");
 		while (true) {
 			try {
