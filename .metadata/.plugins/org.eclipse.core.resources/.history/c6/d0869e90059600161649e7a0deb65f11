@@ -1,0 +1,267 @@
+package au.edu.unimelb.tcp.client;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+public class MessageReceiveThread implements Runnable {
+
+	private SSLSocket socket;
+	private State state;
+
+	private BufferedReader in;
+
+	private JSONParser parser = new JSONParser();
+
+	private boolean run = true;
+	
+
+	public MessageReceiveThread(SSLSocket socket, State state) throws IOException {
+		this.socket = socket;
+		this.state = state;
+	}
+
+	@Override
+	public void run() {
+
+		try {
+			this.in = new BufferedReader(new InputStreamReader(
+					socket.getInputStream(), "UTF-8"));
+			JSONObject message;
+			while (run) {
+				message = (JSONObject) parser.parse(in.readLine());
+				MessageReceive(socket, message);
+			}
+			System.exit(0);
+			in.close();
+			socket.close();
+		} catch (ParseException e) {
+			
+			System.exit(1);
+		} catch (IOException e) {
+			
+			System.exit(1);
+		}
+
+	}
+
+	public void MessageReceive(SSLSocket socket, JSONObject message)
+			throws IOException, ParseException {
+		String type = (String) message.get("type");
+		
+		if (type.equals("login")) {
+			boolean approved = (boolean)message.get("approved");
+			
+			// terminate program if failed
+			if (!approved) {	
+				String [] args = {"login", String.valueOf(approved)};
+				Event event = new Event(this, args);
+				Client.notifyListeners(event);
+				socket.close();
+			}
+			else
+			{
+//				String [] args = {"login", String.valueOf(approved), (String) message.get("ticket")};
+//				Event event = new Event(this, args);
+//				Client.notifyListeners(event);
+				Client.ConnectChatServer((String) message.get("serverAddress"), (String) message.get("coordinationPort"));
+			}				
+			return;
+		}
+		// server reply of #newidentity
+		if (type.equals("newidentity")) {
+			boolean approved = Boolean.parseBoolean((String) message.get("approved"));
+			
+			// terminate program if failed
+			String [] args = {"newidentity", String.valueOf(approved)};
+			Event event = new Event(this, args);
+			Client.notifyListeners(event);
+			
+			return;
+		}
+		
+		// server reply of #list
+		if (type.equals("roomlist")) {
+			JSONArray array = (JSONArray) message.get("rooms");
+			// print all the rooms
+			List<String> rooms = new ArrayList<>();
+			for (int i = 0; i < array.size(); i++) {
+				rooms.add(array.get(i).toString());
+			}
+			Object[] args = {"roomlist",rooms};
+			Event event = new Event(this, args);
+			Client.notifyListeners(event);
+			return;
+		}
+
+		// server sends roomchange
+		if (type.equals("roomchange")) {
+
+			// identify whether the user has quit!
+			if (message.get("roomid").equals("")) {
+				// quit initiated by the current client
+				if (message.get("identity").equals(state.getIdentity())) {
+					in.close();
+					System.exit(1);
+				} else {
+					String msg = message.get("identity") + " has quit!";
+					Object[] args = {"roomchange", String.valueOf(false), msg};
+					Event event = new Event(this, args);
+					Client.notifyListeners(event);
+				}
+			// identify whether the client is new or not
+			} else if (message.get("former").equals("")) {
+				// change state if it's the current client
+				if (message.get("identity").equals(state.getIdentity())) {
+					state.setRoomId((String) message.get("roomid"));
+				}					
+				String msg = message.get("identity") + " moves to "+ (String) message.get("roomid");;
+				Object[] args = {"roomchange", String.valueOf(false), msg};
+				Event event = new Event(this, args);
+				Client.notifyListeners(event);
+			// identify whether roomchange actually happens
+			} else if (message.get("former").equals(message.get("roomid"))) {
+				String msg = "room unchanged";
+				Object[] args = {"roomchange",String.valueOf(false), msg};
+				Event event = new Event(this, args);
+				Client.notifyListeners(event);
+			}
+			// print the normal roomchange message
+			else {
+				// change state if it's the current client
+				if (message.get("identity").equals(state.getIdentity())) {
+					state.setRoomId((String) message.get("roomid"));
+					String msg = message.get("identity") + " moves from " + message.get("former") + " to "
+							+ message.get("roomid");
+					Object[] args = {"roomchange",String.valueOf(true), msg, message.get("roomid")};
+					Event event = new Event(this, args);
+					Client.notifyListeners(event);
+				}
+				String msg = message.get("identity") + " moves from " + message.get("former") + " to "
+						+ message.get("roomid");
+				Object[] args = {"roomchange",String.valueOf(false), msg};
+				Event event = new Event(this, args);
+				Client.notifyListeners(event);
+			}
+			return;
+		}
+		
+		// server reply of #who
+		if (type.equals("roomcontents")) {
+			JSONArray array = (JSONArray) message.get("identities");
+			ArrayList<String> names = new ArrayList<>();
+			System.out.print(message.get("roomid") + " contains");
+			for (int i = 0; i < array.size(); i++) {
+				names.add(array.get(i).toString());
+			}
+			Object[] args = {"roomcontents",names};
+			Event event = new Event(this, args);
+			Client.notifyListeners(event);
+			return;
+		}
+		
+		// server forwards message
+		if (type.equals("message")) {
+			String [] args = {"message",message.get("identity").toString(), message.get("content").toString()};
+			Event event = new Event(this, args);
+			Client.notifyListeners(event);
+			return;
+		}
+		
+		
+		// server reply of #createroom
+		if (type.equals("createroom")) {
+			boolean approved = Boolean.parseBoolean((String)message.get("approved"));
+			String temp_room = (String)message.get("roomid");
+			if (!approved) {				
+				String [] args = {"createroom", "Create room " + temp_room + " failed."};
+				Event event = new Event(this, args);
+				Client.notifyListeners(event);
+			}
+			else {
+				String [] args = {"createroom", "Room " + temp_room + " is created."};
+				Event event = new Event(this, args);
+				Client.notifyListeners(event);
+			}
+			return;
+		}
+		
+		// server reply of # deleteroom
+		if (type.equals("deleteroom")) {
+			boolean approved = Boolean.parseBoolean((String)message.get("approved"));
+			String temp_room = (String)message.get("roomid");
+			if (!approved) {
+				System.out.println("Delete room " + temp_room + " failed.");
+				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			}
+			else {
+				System.out.println("Room " + temp_room + " is deleted.");
+				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			}
+			return;
+		}
+		
+		// server directs the client to another server
+		if (type.equals("route")) {
+			String temp_room = (String)message.get("roomid");
+			String host = (String)message.get("host");
+			int port = Integer.parseInt((String)message.get("port"));
+			
+			// connect to the new server
+			
+			SSLSocketFactory sSLSocketFactory=(SSLSocketFactory)SSLSocketFactory.getDefault();
+			SSLSocket temp_socket =(SSLSocket) sSLSocketFactory.createSocket(host, port);
+			// send #movejoin
+			DataOutputStream out = new DataOutputStream(temp_socket.getOutputStream());
+			JSONObject request = ClientMessages.getMoveJoinRequest(state.getIdentity(), state.getRoomId(), temp_room);
+			send(out, request);
+			
+			// wait to receive serverchange
+			BufferedReader temp_in = new BufferedReader(new InputStreamReader(temp_socket.getInputStream()));
+			JSONObject obj = (JSONObject) parser.parse(temp_in.readLine());
+			
+			
+			// serverchange received and switch server
+			if (obj.get("type").equals("serverchange") && obj.get("approved").equals("true")) {
+				Client.switchServer(temp_socket, out);
+				switchServer(temp_socket, temp_in);
+				String serverid = (String)obj.get("serverid");
+				System.out.println(state.getIdentity() + " switches to server " + serverid);
+				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			}
+			// receive invalid message
+			else {
+				temp_in.close();
+				out.close();
+				temp_socket.close();
+				System.out.println("Server change failed");
+				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			}
+			return;
+		}
+		
+	}
+	
+	public void switchServer(SSLSocket temp_socket, BufferedReader temp_in) throws IOException {
+		in.close();
+		in = temp_in;
+		socket.close();
+		socket = temp_socket;
+	}
+
+	private void send(DataOutputStream out, JSONObject obj) throws IOException {
+		out.write((obj.toJSONString() + "\n").getBytes("UTF-8"));
+		out.flush();
+	}
+}

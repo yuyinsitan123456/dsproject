@@ -44,8 +44,8 @@ public class ServerListening  extends Thread  {
 			//keep listening other servers message
 			while(true) {
 				socket=(SSLSocket)listeningServerSocket.accept();
-				System.out.println(Thread.currentThread().getName() 
-						+ " - server conection accepted");
+//				System.out.println(Thread.currentThread().getName() 
+//						+ " - server conection accepted");
 				this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 				this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 				MessageReceive((JSONObject)this.parser.parse(this.in.readLine()));
@@ -79,7 +79,7 @@ public class ServerListening  extends Thread  {
 	}
 	@SuppressWarnings({ "static-access" })
 	public void MessageReceive(JSONObject message) throws IOException, ParseException {
-		System.out.println(message);
+//		System.out.println(message);
 		String type = (String)message.get("type");
 		ServerState serverState=ServerState.getInstance();
 		Config config=serverState.getConfig();

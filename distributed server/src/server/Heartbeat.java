@@ -40,11 +40,9 @@ public class Heartbeat extends Thread {
 					JSONObject mas=(JSONObject) new Message().getHeartbeat();
 					sendCoorMessage(hostName,serverPort,mas);
 				} catch (Exception e) {
-					System.out.println("1");
 					e.printStackTrace();
 				} 
 			}
-			System.out.println("3");
 			try {
 				Thread.sleep(2000);
 			} catch(InterruptedException ex) {

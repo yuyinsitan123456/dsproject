@@ -57,8 +57,8 @@ public class AuthorizeServer {
 				//Accept an incoming client connection request
 				//Accept client connection
 				serverSocket = (SSLSocket) listeningServerSocket.accept();
-				System.out.println(Thread.currentThread().getName() 
-						+ " - server conection accepted");
+//				System.out.println(Thread.currentThread().getName() 
+//						+ " - server conection accepted");
 				in = new BufferedReader(new InputStreamReader(serverSocket.getInputStream(), "UTF-8"));
 				out = new DataOutputStream(serverSocket.getOutputStream());
 				MessageReceive(out,(JSONObject)parser.parse(in.readLine()));
@@ -81,7 +81,7 @@ public class AuthorizeServer {
 
 	@SuppressWarnings("static-access")
 	public static void MessageReceive(DataOutputStream out,JSONObject message) throws IOException, ParseException {
-		System.out.println(message);
+//		System.out.println(message);
 		String type = (String)message.get("type");
 		if(type.equals("serverList")) {
 			String serverid = (String) message.get("serverid");

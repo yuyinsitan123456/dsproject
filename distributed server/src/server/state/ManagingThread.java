@@ -68,6 +68,7 @@ public class ManagingThread extends Thread {
 	//main logical part
 	@SuppressWarnings({ "static-access" })
 	public void MessageReceive(JSONObject message) throws IOException, ParseException {
+		System.out.println(message);
 		String type = (String)message.get("type");
 		if(type.equals("newidentity")) {
 			if((String) message.get("identity")==null){
