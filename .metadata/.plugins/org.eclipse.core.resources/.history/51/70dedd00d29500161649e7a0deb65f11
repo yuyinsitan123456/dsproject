@@ -99,7 +99,7 @@ public class AuthorizeServer {
 			JSONObject mas=(JSONObject) new Message().getServerList(sendList);
 			sendCoorMessage(serversAddress,coordinationPort, mas);
 		}else if(type.equals("login")){
-			String name = (String) message.get("username");
+			String name = (String) message.get("name");
 			String password = (String) message.get("password");
 			AvailableUserInfo availableUserInfo = new AvailableUserInfo("a","a");
 			if(name.equals(availableUserInfo.getName())&&password.equals(availableUserInfo.getPassword())){

@@ -42,7 +42,6 @@ public class Heartbeat extends Thread {
 					SSLSocketFactory sslSocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 					sslSocket = (SSLSocket) sslSocketfactory.createSocket(hostName, serverPort);
 					DataOutputStream output =new DataOutputStream(sslSocket.getOutputStream());
-//					JSONObject mas=(JSONObject) new Message().getheartbeat(sendList);
 					JSONObject HBMessage = new JSONObject();
 					HBMessage.put("type", "heartbeat");
 					output.write((HBMessage + "\n").getBytes("UTF-8"));
