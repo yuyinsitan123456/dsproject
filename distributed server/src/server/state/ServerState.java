@@ -351,4 +351,20 @@ public class ServerState {
 			remoteChatroomInfoMap.put(room,new RemoteChatroomInfo(room,currentserverInfo));
 		}
 	}
+	
+	public synchronized void deleteServerinfo(JSONArray serverids) {
+		for (int i = 0; i < serverids.size(); i++) {
+			String serverid = (String) serverids.get(i);
+			for(ServerInfo serverInfo:serverInfoList){
+				if(serverid.equals(serverInfo.getServerid())){
+					serverInfoList.remove(serverInfo);
+				}
+			}
+			for(String roomid:remoteChatroomInfoMap.keySet()){
+				if(serverid.equals(remoteChatroomInfoMap.get(roomid).getManagingServer().getServerid())){
+					remoteChatroomInfoMap.remove(roomid);
+				}
+			}
+		}
+	}
 }

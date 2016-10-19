@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -16,6 +15,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import server.state.Message;
 
@@ -47,10 +47,11 @@ public class AuthorizeServer {
 					.getDefault();
 
 			listeningServerSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(serversPort);
+
 			SSLSocket serverSocket =null;
-			
+
 			new Heartbeat().start();
-			
+
 			while (true) {
 
 				//Accept an incoming client connection request
@@ -79,7 +80,7 @@ public class AuthorizeServer {
 	}
 
 	@SuppressWarnings("static-access")
-	public static void MessageReceive(BufferedWriter out,JSONObject message) throws IOException {
+	public static void MessageReceive(BufferedWriter out,JSONObject message) throws IOException, ParseException {
 		String type = (String)message.get("type");
 		if(type.equals("serverList")) {
 			String serverid = (String) message.get("serverid");
@@ -95,10 +96,6 @@ public class AuthorizeServer {
 			}
 			JSONObject mas=(JSONObject) new Message().getServerList(sendList);
 			sendCoorMessage(serversAddress,coordinationPort, mas);
-		}else if(type.equals("backnumber")){
-			String serverid = (String) message.get("serverid");
-			Integer number = (Integer) message.get("number");
-			AuthorizeServerState.getInstance().setUsernumber(serverid, number);
 		}else if(type.equals("login")){
 			String name = (String) message.get("name");
 			String password = (String) message.get("password");
@@ -106,31 +103,17 @@ public class AuthorizeServer {
 			if(name.equals(availableUserInfo.getName())&&password.equals(availableUserInfo.getPassword())){
 				List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
 				JSONObject mas1=new Message().requireUserNumber();
-				sendCoorMessage(serverList,mas1);
-				String flagserverid=null;
-				int flag=0;
-				while(true){
-					Map<String,Integer> usernumber=AuthorizeServerState.getInstance().getUsernumber();
-					if(usernumber.size()==serverList.size()){
-						for(String serverid:usernumber.keySet()){
-							int number=usernumber.get(serverid).intValue();
-							if(number>flag){
-								flag=number;
-								flagserverid=serverid;
-							}
+				String flagserverid=sendgetCoorMessage(serverList,mas1);
+				if(flagserverid!=null){
+					for(CurrentServerInfo serverInfo:serverList){
+						if(flagserverid.equals(serverInfo.getServerid())){
+							String serversAddress=(String)serverInfo.getServerAddress();
+							int clientsPort = (int) serverInfo.getClientsPort();
+							JSONObject mas2=new Message().getUserAuthorizeSuccess(flagserverid,serversAddress,clientsPort,"id");
+							out.write((mas2.toJSONString() + "\n"));
+							out.flush();
+							break;
 						}
-						usernumber.clear();
-						break;
-					}
-				}
-				for(CurrentServerInfo serverInfo:serverList){
-					if(flagserverid.equals(serverInfo.getServerid())){
-						String serversAddress=(String)serverInfo.getServerAddress();
-						int clientsPort = (int) serverInfo.getClientsPort();
-						JSONObject mas2=new Message().getUserAuthorizeSuccess(flagserverid,serversAddress,clientsPort,"id");
-						out.write((mas2.toJSONString() + "\n"));
-						out.flush();
-						break;
 					}
 				}
 			}else{
@@ -138,6 +121,10 @@ public class AuthorizeServer {
 				out.write((mas.toJSONString() + "\n"));
 				out.flush();
 			}
+		}else if(type.equals("heartbeat")){
+			String serverid = (String) message.get("serverid");
+			boolean work = (boolean) message.get("work");
+			AuthorizeServerState.getInstance().changeworkstate(serverid,work);
 		}
 	}
 
@@ -161,5 +148,40 @@ public class AuthorizeServer {
 			writer.close();
 			serverSocket.close();
 		}
+	}
+
+	public static String sendgetCoorMessage(List<CurrentServerInfo> serverList,JSONObject message) throws IOException, ParseException{
+		if(serverList.size()==0)
+			return null;
+		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverList.get(0).getServerAddress(),serverList.get(0).getCoordinationPort());
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+		writer.write(message + "\n");
+		writer.flush();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(serverSocket.getInputStream(), "UTF-8"));
+		JSONParser parser = new JSONParser();
+		JSONObject mas = (JSONObject) parser.parse(reader.readLine());
+		writer.close();
+		reader.close();
+		serverSocket.close();
+		int flag=(int)(long)mas.get("number");
+		String flagserverid=(String)mas.get("serverid");
+		for(int i=1;i<serverList.size();i++){
+			SSLSocketFactory sslsocketfactory1 = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			SSLSocket serverSocket1 = (SSLSocket) sslsocketfactory1.createSocket(serverList.get(i).getServerAddress(),serverList.get(i).getCoordinationPort());
+			BufferedWriter writer1 = new BufferedWriter(new OutputStreamWriter(serverSocket1.getOutputStream(), "UTF-8"));
+			writer1.write(message + "\n");
+			writer1.flush();
+			BufferedReader reader1 = new BufferedReader(new InputStreamReader(serverSocket1.getInputStream(), "UTF-8"));
+			mas = (JSONObject) parser.parse(reader1.readLine());
+			if((int)(long)mas.get("number")<flag){
+				flag=(int)(long)mas.get("number");
+				flagserverid=(String)mas.get("serverid");
+			}
+			writer1.close();
+			reader.close();
+			serverSocket1.close();
+		}
+		return flagserverid;
 	}
 }

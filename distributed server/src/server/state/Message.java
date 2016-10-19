@@ -236,11 +236,23 @@ public class Message {
 		return serverchange;
 	}
 	
-	public static JSONObject getHeartbeat(boolean working){
+	public static JSONObject getHeartbeat(boolean working,String serverid){
 		JSONObject heartbeat = new JSONObject();
 		heartbeat.put("type", "heartbeat");
+		heartbeat.put("serverid", serverid);
 		heartbeat.put("working", working);
 		return heartbeat;
+	}
+	
+	public static JSONObject sendfailserver(Set<String> serverids){
+		JSONObject failserver = new JSONObject();
+		failserver.put("type", "failserver");
+		JSONArray serveridlist=new JSONArray();
+		for(String serverid:serverids){
+			serverids.add(serverid);
+		}
+		failserver.put("serverids", serveridlist);
+		return failserver;
 	}
 	
 }

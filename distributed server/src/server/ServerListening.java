@@ -188,8 +188,11 @@ public class ServerListening  extends Thread  {
 			JSONObject mas=new Message().getUsernumber(config.getServerid(),ServerState.getInstance().getUserInfoMap().keySet().size());
 			MessageSend(mas);
 		} else if(type.equals("heartbeat")){
-			JSONObject heartbeat = new Message().getHeartbeat(true);
-			MessageSend(heartbeat);
+			JSONObject heartbeat = new Message().getHeartbeat(true,config.getServerid());
+			sendCoorMessage(ServerState.getInstance().getCentraladdress(),ServerState.getInstance().getCentralport(),heartbeat);
+		} else if(type.equals("failserver")){
+			JSONArray serverids = (JSONArray) message.get("serverids");
+			ServerState.getInstance().deleteServerinfo(serverids);
 		}
 	}
 

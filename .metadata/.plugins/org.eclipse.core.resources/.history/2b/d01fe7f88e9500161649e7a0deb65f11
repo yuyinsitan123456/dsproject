@@ -1,0 +1,34 @@
+package server;
+
+public class CurrentServerInfo {
+	private String serverid;
+	private String serverAddress;
+	private int clientsPort = 4444;
+	private int coordinationPort = 5555;
+	private boolean work=true;
+
+	public CurrentServerInfo(String serverid, String serverAddress, int clientsPort, int coordinationPort) {
+		super();
+		this.serverid = serverid;
+		this.serverAddress = serverAddress;
+		this.clientsPort = clientsPort;
+		this.coordinationPort = coordinationPort;
+		this.work=true;
+	}
+
+	public String getServerid() {
+		return serverid;
+	}
+
+	public String getServerAddress() {
+		return serverAddress;
+	}
+
+	public int getClientsPort() {
+		return clientsPort;
+	}
+
+	public int getCoordinationPort() {
+		return coordinationPort;
+	}
+}

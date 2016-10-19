@@ -1,16 +1,17 @@
 package server;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+
+import server.state.Message;
 
 public class Heartbeat extends Thread {
 
@@ -27,9 +28,11 @@ public class Heartbeat extends Thread {
 			} catch(InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
+
+			AuthorizeServerState.getInstance().changeworkstates();
+
 			List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
 			for (CurrentServerInfo serverInfo : serverList) {
-				String serverId = serverInfo.getServerid();
 				String hostName = serverInfo.getServerAddress();
 				int serverPort = serverInfo.getCoordinationPort();
 				SSLSocket sslSocket = null;
@@ -41,19 +44,10 @@ public class Heartbeat extends Thread {
 					HBMessage.put("type", "heartbeat");
 					output.write((HBMessage.toJSONString() + "\n"));
 					output.flush();
-					sslSocket.setSoTimeout(8000);
-					JSONParser parser = new JSONParser();
-					BufferedReader input = new BufferedReader(new InputStreamReader(sslSocket.getInputStream(), "UTF-8"));
-					JSONObject message = (JSONObject) parser.parse(input.readLine());
-					Boolean isWorking = Boolean.valueOf(String.valueOf(message.get("working")));
-					if(!isWorking){
-						AuthorizeServerState.getInstance().deleteServer(serverId);
-					}
-					input.close();
 					output.close();
 					sslSocket.close();
 				} catch (Exception e) {
-					AuthorizeServerState.getInstance().deleteServer(serverId);
+					e.printStackTrace();
 				} finally {
 					if (sslSocket != null) {
 						try {
@@ -64,6 +58,49 @@ public class Heartbeat extends Thread {
 					}
 				}
 			}
+
+			try {
+				Thread.sleep(8000);
+			} catch(InterruptedException ex) {
+				Thread.currentThread().interrupt();
+			}
+
+			Set<String> workserverids=new HashSet<String>();
+			Set<String> noworkserverids=new HashSet<String>();
+
+			for (CurrentServerInfo serverInfo : serverList) {
+				if(!serverInfo.getWork()){
+					noworkserverids.add(serverInfo.getServerid());
+				}else{
+					workserverids.add(serverInfo.getServerid());
+				}
+			}
+
+			AuthorizeServerState.getInstance().deleteServers(noworkserverids);
+
+			for(String workserverid:workserverids){
+				for (CurrentServerInfo serverInfo : serverList) {
+					@SuppressWarnings("static-access")
+					JSONObject mas=new Message().sendfailserver(noworkserverids);
+					if(workserverid.equals(serverInfo.getServerid())){
+						try {
+							sendCoorMessage(serverInfo.getServerAddress(),serverInfo.getCoordinationPort(),mas);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+
 		}
+	}
+	public static void sendCoorMessage(String address,int port,JSONObject message) throws IOException{
+		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+		writer.write(message + "\n");
+		writer.flush();
+		writer.close();
+		serverSocket.close();
 	}
 }

@@ -5,6 +5,7 @@ public class CurrentServerInfo {
 	private String serverAddress;
 	private int clientsPort = 4444;
 	private int coordinationPort = 5555;
+	private boolean work=true;
 
 	public CurrentServerInfo(String serverid, String serverAddress, int clientsPort, int coordinationPort) {
 		super();
@@ -12,6 +13,7 @@ public class CurrentServerInfo {
 		this.serverAddress = serverAddress;
 		this.clientsPort = clientsPort;
 		this.coordinationPort = coordinationPort;
+		this.work=true;
 	}
 
 	public String getServerid() {
@@ -28,5 +30,13 @@ public class CurrentServerInfo {
 
 	public int getCoordinationPort() {
 		return coordinationPort;
+	}
+	
+	public boolean getWork() {
+		return work;
+	}
+
+	public void setWork(boolean work) {
+		this.work=work;
 	}
 }
