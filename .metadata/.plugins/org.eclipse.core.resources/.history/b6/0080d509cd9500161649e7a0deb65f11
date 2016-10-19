@@ -177,8 +177,8 @@ public class Message {
 		JSONObject serverchange = new JSONObject();
 		serverchange.put("type", "login");
 		serverchange.put("approved", true);
-		serverchange.put("address", serverAddress);
-		serverchange.put("port", coordinationPort);
+		serverchange.put("serverAddress", serverAddress);
+		serverchange.put("coordinationPort", coordinationPort);
 		serverchange.put("ticket", ticket);
 		return serverchange;
 	}

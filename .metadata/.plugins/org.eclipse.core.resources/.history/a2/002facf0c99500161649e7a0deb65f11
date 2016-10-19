@@ -1,6 +1,5 @@
 package server;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashSet;
@@ -24,9 +23,11 @@ public class Heartbeat extends Thread {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
+		System.setProperty("javax.net.ssl.trustStore","DS.jks");
+		System.setProperty("javax.net.debug","none");
 		while (true) {
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(8000);
 			} catch(InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
@@ -41,18 +42,17 @@ public class Heartbeat extends Thread {
 				try{
 					SSLSocketFactory sslSocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 					sslSocket = (SSLSocket) sslSocketfactory.createSocket(hostName, serverPort);
-					DataOutputStream output =new DataOutputStream(sslSocket.getOutputStream());
+					BufferedWriter output = new BufferedWriter(new OutputStreamWriter(sslSocket.getOutputStream(), "UTF-8"));
 					JSONObject HBMessage = new JSONObject();
 					HBMessage.put("type", "heartbeat");
-					output.write((HBMessage + "\n").getBytes("UTF-8"));
+					output.write((HBMessage + "\n"));
 					output.flush();
 					output.close();
 					sslSocket.close();
 				} catch (Exception e) {
-					System.out.println("1");
 					e.printStackTrace();
 				} finally {
-					System.out.println("2");
+					System.out.println("1");
 					if (sslSocket != null) {
 						try {
 							sslSocket.close();
@@ -62,9 +62,9 @@ public class Heartbeat extends Thread {
 					}
 				}
 			}
-			System.out.println("3");
+
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(8000);
 			} catch(InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}

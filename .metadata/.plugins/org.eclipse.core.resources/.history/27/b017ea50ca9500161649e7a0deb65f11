@@ -2,7 +2,6 @@ package server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -82,7 +81,6 @@ public class AuthorizeServer {
 
 	@SuppressWarnings("static-access")
 	public static void MessageReceive(BufferedWriter out,JSONObject message) throws IOException, ParseException {
-		System.out.println(message);
 		String type = (String)message.get("type");
 		if(type.equals("serverList")) {
 			String serverid = (String) message.get("serverid");
@@ -111,7 +109,7 @@ public class AuthorizeServer {
 						if(flagserverid.equals(serverInfo.getServerid())){
 							String serversAddress=(String)serverInfo.getServerAddress();
 							int clientsPort = (int) serverInfo.getClientsPort();
-							JSONObject mas2=new Message().getUserAuthorizeSuccess(serversAddress,clientsPort,"id");
+							JSONObject mas2=new Message().getUserAuthorizeSuccess(flagserverid,serversAddress,clientsPort,"id");
 							out.write((mas2.toJSONString() + "\n"));
 							out.flush();
 							break;
@@ -171,8 +169,8 @@ public class AuthorizeServer {
 		for(int i=1;i<serverList.size();i++){
 			SSLSocketFactory sslsocketfactory1 = (SSLSocketFactory) SSLSocketFactory.getDefault();
 			SSLSocket serverSocket1 = (SSLSocket) sslsocketfactory1.createSocket(serverList.get(i).getServerAddress(),serverList.get(i).getCoordinationPort());
-			DataOutputStream writer1 =new DataOutputStream((serverSocket.getOutputStream()));
-			writer1.write((message + "\n").getBytes("UTF-8"));
+			BufferedWriter writer1 = new BufferedWriter(new OutputStreamWriter(serverSocket1.getOutputStream(), "UTF-8"));
+			writer1.write(message + "\n");
 			writer1.flush();
 			BufferedReader reader1 = new BufferedReader(new InputStreamReader(serverSocket1.getInputStream(), "UTF-8"));
 			mas = (JSONObject) parser.parse(reader1.readLine());

@@ -217,8 +217,8 @@ public class ServerListening  extends Thread  {
 		for(ServerInfo serverInfo:serverInfoList){
 			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 			SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
-			DataOutputStream writer =new DataOutputStream((serverSocket.getOutputStream()));
-			writer.write((message + "\n").getBytes("UTF-8"));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+			writer.write(message + "\n");
 			writer.flush();
 			writer.close();
 			serverSocket.close();

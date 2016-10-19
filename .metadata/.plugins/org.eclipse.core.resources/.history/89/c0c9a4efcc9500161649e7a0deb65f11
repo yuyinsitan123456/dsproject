@@ -82,7 +82,6 @@ public class AuthorizeServer {
 
 	@SuppressWarnings("static-access")
 	public static void MessageReceive(BufferedWriter out,JSONObject message) throws IOException, ParseException {
-		System.out.println(message);
 		String type = (String)message.get("type");
 		if(type.equals("serverList")) {
 			String serverid = (String) message.get("serverid");
@@ -111,7 +110,7 @@ public class AuthorizeServer {
 						if(flagserverid.equals(serverInfo.getServerid())){
 							String serversAddress=(String)serverInfo.getServerAddress();
 							int clientsPort = (int) serverInfo.getClientsPort();
-							JSONObject mas2=new Message().getUserAuthorizeSuccess(serversAddress,clientsPort,"id");
+							JSONObject mas2=new Message().getUserAuthorizeSuccess(flagserverid,serversAddress,clientsPort,"id");
 							out.write((mas2.toJSONString() + "\n"));
 							out.flush();
 							break;

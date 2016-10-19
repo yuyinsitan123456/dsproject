@@ -173,12 +173,12 @@ public class Message {
 		return list;
 	}
 	
-	public static JSONObject getUserAuthorizeSuccess(String serverAddress, int coordinationPort,String ticket){
+	public static JSONObject getUserAuthorizeSuccess(String serverid, String serverAddress, int coordinationPort,String ticket){
 		JSONObject serverchange = new JSONObject();
 		serverchange.put("type", "login");
 		serverchange.put("approved", true);
-		serverchange.put("address", serverAddress);
-		serverchange.put("port", coordinationPort);
+		serverchange.put("serverAddress", serverAddress);
+		serverchange.put("coordinationPort", coordinationPort);
 		serverchange.put("ticket", ticket);
 		return serverchange;
 	}

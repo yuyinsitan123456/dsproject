@@ -39,7 +39,7 @@ public class AuthorizeServer {
 		System.setProperty("javax.net.ssl.keyStorePassword","888888");
 
 		// Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
-		System.setProperty("javax.net.debug","none");
+		System.setProperty("javax.net.debug","all");
 
 		try {
 			// Create a server socket listening on given port
@@ -82,7 +82,6 @@ public class AuthorizeServer {
 
 	@SuppressWarnings("static-access")
 	public static void MessageReceive(BufferedWriter out,JSONObject message) throws IOException, ParseException {
-		System.out.println(message);
 		String type = (String)message.get("type");
 		if(type.equals("serverList")) {
 			String serverid = (String) message.get("serverid");
