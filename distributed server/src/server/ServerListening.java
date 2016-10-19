@@ -177,8 +177,8 @@ public class ServerListening  extends Thread  {
 		} else if(type.equals("helloServer")){
 			String serverid = (String) message.get("serverid");
 			String serversAddress=(String) message.get("serversAddress");
-			int clientsPort = (int) message.get("clientsPort");
-			int coordinationPort = (int) message.get("coordinationPort");
+			int clientsPort = (int)(long) message.get("clientsPort");
+			int coordinationPort = (int)(long) message.get("coordinationPort");
 			ServerState.getInstance().addServerInfo(serverid,serversAddress,clientsPort,coordinationPort);
 			JSONObject mas=new Message().getHelloagain(serverState.getLocalChatroomInfoMap().keySet(),serverid);
 			sendCoorMessage(serversAddress,coordinationPort,mas);

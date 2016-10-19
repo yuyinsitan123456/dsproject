@@ -55,6 +55,7 @@ public class Server  {
 		System.setProperty("javax.net.ssl.trustStore","DS.jks");
 		//Password to access the private key from the keystore file
 		System.setProperty("javax.net.ssl.keyStorePassword","888888");
+		System.setProperty("javax.net.ssl.trustStorePassword", "888888");
 
 		// Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
 		System.setProperty("javax.net.debug","none");
@@ -79,7 +80,10 @@ public class Server  {
 					.getDefault();
 			listeningClientSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(serversPort);
 
-			listeningServerSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(coordinationPort);
+			SSLServerSocketFactory sslserversocketfactory1 = (SSLServerSocketFactory) SSLServerSocketFactory
+					.getDefault();
+			
+			listeningServerSocket = (SSLServerSocket) sslserversocketfactory1.createServerSocket(coordinationPort);
 			ServerListening ServerListening = new ServerListening(listeningServerSocket);
 			ServerListening.start(); 
 

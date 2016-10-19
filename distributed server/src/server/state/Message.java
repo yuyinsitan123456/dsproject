@@ -254,4 +254,10 @@ public class Message {
 		return failserver;
 	}
 	
+	public static JSONObject getHeartbeat(){
+		JSONObject heartbeat = new JSONObject();
+		heartbeat.put("type", "heartbeat");
+		return heartbeat;
+	}
+	
 }

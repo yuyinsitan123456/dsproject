@@ -1,0 +1,93 @@
+package server;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import org.json.simple.JSONObject;
+
+import server.state.Message;
+
+public class Heartbeat extends Thread {
+
+
+	public  Heartbeat(){
+
+	}
+
+	@Override
+	public void run() {
+		while (true) {
+			try {
+				Thread.sleep(8000);
+			} catch(InterruptedException ex) {
+				Thread.currentThread().interrupt();
+			}
+
+			AuthorizeServerState.getInstance().changeworkstates();
+
+			List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
+			for (CurrentServerInfo serverInfo : serverList) {
+				String hostName = serverInfo.getServerAddress();
+				int serverPort = serverInfo.getCoordinationPort();
+				try{
+					@SuppressWarnings("static-access")
+					JSONObject mas=(JSONObject) new Message().getHeartbeat();
+					sendCoorMessage(hostName,serverPort,mas);
+				} catch (Exception e) {
+					System.out.println("1");
+					e.printStackTrace();
+				} 
+			}
+			System.out.println("3");
+			try {
+				Thread.sleep(8000);
+			} catch(InterruptedException ex) {
+				Thread.currentThread().interrupt();
+			}
+
+			Set<String> workserverids=new HashSet<String>();
+			Set<String> noworkserverids=new HashSet<String>();
+
+			for (CurrentServerInfo serverInfo : serverList) {
+				if(!serverInfo.getWork()){
+					noworkserverids.add(serverInfo.getServerid());
+				}else{
+					workserverids.add(serverInfo.getServerid());
+				}
+			}
+			if(!noworkserverids.isEmpty()){
+				AuthorizeServerState.getInstance().deleteServers(noworkserverids);
+
+				for(String workserverid:workserverids){
+					for (CurrentServerInfo serverInfo : serverList) {
+						@SuppressWarnings("static-access")
+						JSONObject mas=new Message().sendfailserver(noworkserverids);
+						if(workserverid.equals(serverInfo.getServerid())){
+							try {
+								sendCoorMessage(serverInfo.getServerAddress(),serverInfo.getCoordinationPort(),mas);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public void sendCoorMessage(String address,int port,JSONObject message) throws IOException{
+		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+		writer.write(message + "\n");
+		writer.flush();
+		writer.close();
+		serverSocket.close();
+	}
+}
