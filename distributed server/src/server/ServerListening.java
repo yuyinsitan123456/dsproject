@@ -78,6 +78,7 @@ public class ServerListening  extends Thread  {
 	}
 	@SuppressWarnings({ "static-access" })
 	public void MessageReceive(JSONObject message) throws IOException, ParseException {
+		System.out.println(message);
 		String type = (String)message.get("type");
 		ServerState serverState=ServerState.getInstance();
 		Config config=serverState.getConfig();

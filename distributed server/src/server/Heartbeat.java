@@ -21,7 +21,10 @@ public class Heartbeat extends Thread {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public void run() {
+		System.setProperty("javax.net.ssl.trustStore","\\DS.jks");
+		System.setProperty("javax.net.debug","none");
 		while (true) {
 			try {
 				Thread.sleep(8000);
@@ -49,6 +52,7 @@ public class Heartbeat extends Thread {
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
+					System.out.println("1");
 					if (sslSocket != null) {
 						try {
 							sslSocket.close();
@@ -91,9 +95,9 @@ public class Heartbeat extends Thread {
 					}
 				}
 			}
-
 		}
 	}
+	
 	public static void sendCoorMessage(String address,int port,JSONObject message) throws IOException{
 		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
