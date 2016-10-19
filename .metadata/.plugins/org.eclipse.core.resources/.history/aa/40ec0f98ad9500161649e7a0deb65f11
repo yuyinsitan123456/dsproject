@@ -71,57 +71,53 @@ public class ManagingThread extends Thread {
 	public void MessageReceive(JSONObject message) throws IOException, ParseException {
 		String type = (String)message.get("type");
 		if(type.equals("newidentity")) {
-			if((String) message.get("identity")==null){
-				this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply("false"));
-			}else{
-				ServerState serverState=ServerState.getInstance();
-				String identity = (String) message.get("identity");
-				String pattern = "[A-Za-z]{1}[A-Za-z0-9]{2,15}";
-				Pattern r = Pattern.compile(pattern);
-				Matcher m = r.matcher(identity);
-				if(m.matches()&&!serverState.getUserInfoMap().keySet().contains(identity)){
-					Config config=serverState.getConfig();
-					List<ServerInfo> serverInfoList=serverState.getServerInfoList();
-					JSONObject lockIdR=new Message().getLockIdentityRequest(config.getServerid(), identity);
-					sendCoorMessage(serverInfoList,lockIdR);
-					boolean flag=true;
-					while(true){
-						Map<String,Map<String,String>> userInfoVoteSet=ServerState.getInstance().getUserInfoVoteSet();
-						if(userInfoVoteSet.containsKey(identity)){
-							Map<String,String> userInfoVotes=userInfoVoteSet.get(identity);
-							if(userInfoVotes!=null&&userInfoVotes.size()==serverInfoList.size()){
-								for(ServerInfo serverInfo:serverInfoList){
-									flag=flag&&("true".equals(userInfoVotes.get(serverInfo.getServerid())));
-								}
-								break;
+			ServerState serverState=ServerState.getInstance();
+			String identity = (String) message.get("identity");
+			String pattern = "[A-Za-z]{1}[A-Za-z0-9]{2,15}";
+			Pattern r = Pattern.compile(pattern);
+			Matcher m = r.matcher(identity);
+			if(m.matches()&&!serverState.getUserInfoMap().keySet().contains(identity)){
+				Config config=serverState.getConfig();
+				List<ServerInfo> serverInfoList=serverState.getServerInfoList();
+				JSONObject lockIdR=new Message().getLockIdentityRequest(config.getServerid(), identity);
+				sendCoorMessage(serverInfoList,lockIdR);
+				boolean flag=true;
+				while(true){
+					Map<String,Map<String,String>> userInfoVoteSet=ServerState.getInstance().getUserInfoVoteSet();
+					if(userInfoVoteSet.containsKey(identity)){
+						Map<String,String> userInfoVotes=userInfoVoteSet.get(identity);
+						if(userInfoVotes!=null&&userInfoVotes.size()==serverInfoList.size()){
+							for(ServerInfo serverInfo:serverInfoList){
+								flag=flag&&("true".equals(userInfoVotes.get(serverInfo.getServerid())));
 							}
+							break;
 						}
 					}
-					this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
-					JSONObject leaseIdR=new Message().getReleasingIdentity(config.getServerid(), identity);
-					sendCoorMessage(serverInfoList,leaseIdR);
-					if(flag){
-						String currentChatroom = "MainHall-"+config.getServerid();
-						UserInfo userInfo = new UserInfo(identity,currentChatroom,socket,this);
-						this.setIdentity(identity);
-						Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
-						Map<String,LocalChatroomInfo> localChatroomInfoMap = serverState.getLocalChatroomInfoMap();
-						LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(currentChatroom);
-						List<String> members = localChatroomInfo.getMembers();
-						if(members!=null){
-							for(String member : members) {
-								userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,"", currentChatroom));
-							}
-						}
-						this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(this.identity,"", currentChatroom));
-						ServerState.getInstance().newidentity(identity, userInfo, currentChatroom);
-					}else{
-						this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
-						ServerState.getInstance().deleteUserInfoVoteSets(identity, serverInfoList);
-					}
-				}else{
-					this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply("false"));
 				}
+				this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
+				JSONObject leaseIdR=new Message().getReleasingIdentity(config.getServerid(), identity);
+				sendCoorMessage(serverInfoList,leaseIdR);
+				if(flag){
+					String currentChatroom = "MainHall-"+config.getServerid();
+					UserInfo userInfo = new UserInfo(identity,currentChatroom,socket,this);
+					this.setIdentity(identity);
+					Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+					Map<String,LocalChatroomInfo> localChatroomInfoMap = serverState.getLocalChatroomInfoMap();
+					LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(currentChatroom);
+					List<String> members = localChatroomInfo.getMembers();
+					if(members!=null){
+						for(String member : members) {
+							userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,"", currentChatroom));
+						}
+					}
+					this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(this.identity,"", currentChatroom));
+					ServerState.getInstance().newidentity(identity, userInfo, currentChatroom);
+				}else{
+					this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
+					ServerState.getInstance().deleteUserInfoVoteSets(identity, serverInfoList);
+				}
+			}else{
+				this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply("false"));
 			}
 		} else if(type.equals("list")) {
 			ServerState serverState=ServerState.getInstance();
