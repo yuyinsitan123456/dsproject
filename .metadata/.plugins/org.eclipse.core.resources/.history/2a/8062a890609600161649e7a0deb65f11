@@ -1,0 +1,82 @@
+package au.edu.unimelb.tcp.client;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+
+public class Client {
+
+	public static void main(String[] args) throws IOException, ParseException {
+		
+		System.setProperty("javax.net.ssl.trustStore", "D://DS.jks");
+		
+		System.setProperty("javax.net.debug","all");
+		SSLSocket socket = null;
+		String name = null;
+		String password = null;
+		String identity = null;
+		String ticket=null;
+		boolean debug = false;
+		try {
+			//load command line args
+			ComLineValues values = new ComLineValues();
+			CmdLineParser parser = new CmdLineParser(values);
+			try {
+				parser.parseArgument(args);
+				String hostname = values.getHost();
+				name = values.getName();
+				password = values.getPassword();
+				identity= values.getIdeneity();
+				int port = values.getPort();
+				debug = values.isDebug();
+				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				SSLSocket temp_socket = (SSLSocket) sslsocketfactory.createSocket(hostname, port);
+				JSONObject sendToServer = new JSONObject();
+				sendToServer = ClientMessages.getLoginRequest(name,password); 
+				DataOutputStream temp_out = new DataOutputStream(temp_socket.getOutputStream());
+				temp_out.write((sendToServer.toJSONString() + "\n").getBytes("UTF-8"));
+				temp_out.flush();
+				BufferedReader temp_in = new BufferedReader(new InputStreamReader(temp_socket.getInputStream()));
+				JSONParser jparser = new JSONParser();
+				JSONObject obj = (JSONObject) jparser.parse(temp_in.readLine());
+				String type = (String) obj.get("type");
+				if (type.equals("login")) {
+					String taddress = (String)obj.get("address");
+					boolean approved = (boolean)obj.get("approved");
+					int tport = Integer.parseInt((String)obj.get("port"));
+					ticket = (String)obj.get("ticket");
+					if(approved){
+						socket = (SSLSocket) sslsocketfactory.createSocket(taddress, tport);
+					}
+				}
+				
+			} catch (CmdLineException e) {
+				e.printStackTrace();
+			}
+			
+			State state = new State(identity, "");
+			
+			// start sending thread
+			MessageSendThread messageSendThread = new MessageSendThread(socket, state, debug,ticket);
+			Thread sendThread = new Thread(messageSendThread);
+			sendThread.start();
+			
+			// start receiving thread
+			Thread receiveThread = new Thread(new MessageReceiveThread(socket, state, messageSendThread, debug));
+			receiveThread.start();
+			
+		} catch (IOException e) {
+			System.out.println("Communication Error: " + e.getMessage());
+		}
+	}
+}

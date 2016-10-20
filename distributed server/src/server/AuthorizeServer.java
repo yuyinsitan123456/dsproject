@@ -81,13 +81,13 @@ public class AuthorizeServer {
 
 	@SuppressWarnings("static-access")
 	public static void MessageReceive(DataOutputStream out,JSONObject message) throws IOException, ParseException {
-//		System.out.println(message);
+		System.out.println(message);
 		String type = (String)message.get("type");
 		if(type.equals("serverList")) {
 			String serverid = (String) message.get("serverid");
 			String serversAddress=(String) message.get("serversAddress");
-			int clientsPort =(int)(long) message.get("clientsPort");
-			int coordinationPort = (int)(long) message.get("coordinationPort");
+			int clientsPort =Integer.parseInt((String) message.get("clientsPort"));
+			int coordinationPort = Integer.parseInt((String) message.get("coordinationPort"));
 			List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
 			List<String> sendList = new ArrayList<String>();
 			for(CurrentServerInfo server:serverList){
@@ -106,8 +106,8 @@ public class AuthorizeServer {
 		}else if(type.equals("login")){
 			String name = (String) message.get("username");
 			String password = (String) message.get("password");
-			AvailableUserInfo availableUserInfo = new AvailableUserInfo("a","a");
-			if(name.equals(availableUserInfo.getName())&&password.equals(availableUserInfo.getPassword())){
+			AvailableUserInfo availableUserInfo=AuthorizeServerState.getInstance().getUserInfoMap().get(name);
+			if(availableUserInfo!=null&&password.equals(availableUserInfo.getPassword())&&availableUserInfo.getUserState()){
 				List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
 				JSONObject mas1=new Message().requireUserNumber();
 				String flagserverid=null;
@@ -123,7 +123,7 @@ public class AuthorizeServer {
 					writer.close();
 					reader.close();
 					serverSocket.close();
-					int flag=(int)(long)mas.get("number");
+					int flag=Integer.parseInt((String)mas.get("number"));
 					flagserverid=(String)mas.get("serverid");
 					for(int i=1;i<serverList.size();i++){
 						SSLSocketFactory sslsocketfactory1 = (SSLSocketFactory) SSLSocketFactory.getDefault();
@@ -133,8 +133,8 @@ public class AuthorizeServer {
 						writer1.flush();
 						BufferedReader reader1 = new BufferedReader(new InputStreamReader(serverSocket1.getInputStream(), "UTF-8"));
 						mas = (JSONObject) parser.parse(reader1.readLine());
-						if((int)(long)mas.get("number")<flag){
-							flag=(int)(long)mas.get("number");
+						if(Integer.parseInt((String)mas.get("number"))<flag){
+							flag=Integer.parseInt((String)mas.get("number"));
 							flagserverid=(String)mas.get("serverid");
 						}
 						writer1.close();
@@ -147,13 +147,14 @@ public class AuthorizeServer {
 						if(flagserverid.equals(serverInfo.getServerid())){
 							String serversAddress=(String)serverInfo.getServerAddress();
 							int clientsPort = (int) serverInfo.getClientsPort();
-							JSONObject mas2=new Message().getUserAuthorizeSuccess(serversAddress,clientsPort,"id");
+							JSONObject mas2=new Message().getUserAuthorizeSuccess(serversAddress,String.valueOf(clientsPort),"id");
 							out.write((mas2.toJSONString() + "\n").getBytes("UTF-8"));
 							out.flush();
 							break;
 						}
 					}
 				}
+				availableUserInfo.setUserState(false);
 			}else{
 				JSONObject mas=new Message().getUserAuthorizeFail();
 				out.write((mas.toJSONString() + "\n").getBytes("UTF-8"));
@@ -161,7 +162,7 @@ public class AuthorizeServer {
 			}
 		}else if(type.equals("heartbeat")){
 			String serverid = (String) message.get("serverid");
-			boolean work = (boolean) message.get("working");
+			boolean work = Boolean.parseBoolean((String) message.get("working"));
 			AuthorizeServerState.getInstance().changeworkstate(serverid,work);
 		}
 	}

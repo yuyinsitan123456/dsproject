@@ -11,12 +11,18 @@ public class AuthorizeServerState {
 	private static AuthorizeServerState instance;
 	private List<CurrentServerInfo> serverInfoList;
 	private Map<String,AvailableUserInfo> userInfoMap;
-	//	private Map<String,Integer> usernumber;
 
 	private AuthorizeServerState() {
 		serverInfoList = new ArrayList<>();
 		userInfoMap = new HashMap<String,AvailableUserInfo>();
-		//		usernumber = new HashMap<String,Integer>();
+		AvailableUserInfo availableUserInfo1 = new AvailableUserInfo("a","a");
+		AvailableUserInfo availableUserInfo2 = new AvailableUserInfo("b","b");
+		AvailableUserInfo availableUserInfo3 = new AvailableUserInfo("c","c");
+		AvailableUserInfo availableUserInfo4 = new AvailableUserInfo("d","d");
+		userInfoMap.put(availableUserInfo1.getName(),availableUserInfo1);
+		userInfoMap.put(availableUserInfo2.getName(),availableUserInfo2);
+		userInfoMap.put(availableUserInfo3.getName(),availableUserInfo3);
+		userInfoMap.put(availableUserInfo4.getName(),availableUserInfo4);
 	}
 
 	public static synchronized AuthorizeServerState getInstance() {
@@ -42,14 +48,6 @@ public class AuthorizeServerState {
 		this.userInfoMap = userInfoMap;
 	}
 
-	//	public Map<String,Integer> getUsernumber() {
-	//		return usernumber;
-	//	}
-	//
-	//	public void setUsernumber(String serverid,Integer number) {
-	//		this.usernumber.put(serverid, number);
-	//	}
-
 	public void addUser(AvailableUserInfo userInfo) {
 		userInfoMap.put(userInfo.getName(),userInfo);
 	}
@@ -70,7 +68,7 @@ public class AuthorizeServerState {
 			}
 		}
 	}
-	
+
 	public void deleteServers(Set<String> noworkserverids) {
 		for(String noworkserverid:noworkserverids){
 			deleteServer(noworkserverid);

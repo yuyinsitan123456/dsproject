@@ -71,7 +71,7 @@ public class ManagingThread extends Thread {
 		System.out.println(message);
 		String type = (String)message.get("type");
 		if(type.equals("newidentity")) {
-			if((String) message.get("identity")==null){
+			if((String) message.get("ticket")==null){
 				this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply("false"));
 			}else{
 				ServerState serverState=ServerState.getInstance();

@@ -24,7 +24,7 @@ public class Heartbeat extends Thread {
 	public void run() {
 		while (true) {
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(10000);
 			} catch(InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
@@ -44,7 +44,7 @@ public class Heartbeat extends Thread {
 				} 
 			}
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(10000);
 			} catch(InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}

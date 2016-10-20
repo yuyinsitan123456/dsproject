@@ -173,10 +173,10 @@ public class Message {
 		return list;
 	}
 	
-	public static JSONObject getUserAuthorizeSuccess(String serverAddress, int coordinationPort,String ticket){
+	public static JSONObject getUserAuthorizeSuccess(String serverAddress, String coordinationPort,String ticket){
 		JSONObject serverchange = new JSONObject();
 		serverchange.put("type", "login");
-		serverchange.put("approved", true);
+		serverchange.put("approved", "true");
 		serverchange.put("address", serverAddress);
 		serverchange.put("port", coordinationPort);
 		serverchange.put("ticket", ticket);
@@ -186,11 +186,11 @@ public class Message {
 	public static JSONObject getUserAuthorizeFail(){
 		JSONObject serverchange = new JSONObject();
 		serverchange.put("type", "login");
-		serverchange.put("approved", false);
+		serverchange.put("approved", "false");
 		return serverchange;
 	}
 	
-	public static JSONObject getHello(String serverid, String serverAddress,int clientsPort, int coordinationPort){
+	public static JSONObject getHello(String serverid, String serverAddress,String clientsPort, String coordinationPort){
 		JSONObject serverchange = new JSONObject();
 		serverchange.put("type", "helloServer");
 		serverchange.put("serverid", serverid);
@@ -217,7 +217,7 @@ public class Message {
 		serverchange.put("type", "usernumber");
 		return serverchange;
 	}
-	public static JSONObject getUsernumber(String serverid,int number){
+	public static JSONObject getUsernumber(String serverid,String number){
 		JSONObject serverchange = new JSONObject();
 		serverchange.put("type", "backnumber");
 		serverchange.put("serverid", serverid);
@@ -225,7 +225,7 @@ public class Message {
 		return serverchange;
 	}
 	
-	public static JSONObject requireServerlist(String serverid,String serversAddress,int clientsPort,int coordinationPort){
+	public static JSONObject requireServerlist(String serverid,String serversAddress,String clientsPort,String coordinationPort){
 		JSONObject serverchange = new JSONObject();
 		serverchange.put("type", "serverList");
 		serverchange.put("serverid", serverid);
@@ -235,7 +235,7 @@ public class Message {
 		return serverchange;
 	}
 	
-	public static JSONObject getHeartbeat(boolean working,String serverid){
+	public static JSONObject getHeartbeat(String working,String serverid){
 		JSONObject heartbeat = new JSONObject();
 		heartbeat.put("type", "heartbeat");
 		heartbeat.put("serverid", serverid);

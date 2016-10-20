@@ -79,7 +79,7 @@ public class ServerListening  extends Thread  {
 	}
 	@SuppressWarnings({ "static-access" })
 	public void MessageReceive(JSONObject message) throws IOException, ParseException {
-//		System.out.println(message);
+		System.out.println(message);
 		String type = (String)message.get("type");
 		ServerState serverState=ServerState.getInstance();
 		Config config=serverState.getConfig();
@@ -171,14 +171,14 @@ public class ServerListening  extends Thread  {
 				ServerInfo serverInfo = new ServerInfo(serverinfo[0],serverinfo[1],Integer.valueOf(serverinfo[2]),Integer.valueOf(serverinfo[3]));
 				serverInfoList.add(serverInfo);
 			}
-			JSONObject mas=new Message().getHello(config.getServerid(),config.getServerAddress(),config.getClientsPort(),config.getCoordinationPort());
+			JSONObject mas=new Message().getHello(config.getServerid(),config.getServerAddress(),String.valueOf(config.getClientsPort()),String.valueOf(config.getCoordinationPort()));
 			sendCoorMessage(serverInfoList,mas);
 			ServerState.getInstance().initServerList(serverlist);
 		} else if(type.equals("helloServer")){
 			String serverid = (String) message.get("serverid");
 			String serversAddress=(String) message.get("serversAddress");
-			int clientsPort = (int)(long) message.get("clientsPort");
-			int coordinationPort = (int)(long) message.get("coordinationPort");
+			int clientsPort = Integer.parseInt((String) message.get("clientsPort"));
+			int coordinationPort =Integer.parseInt((String) message.get("coordinationPort"));
 			ServerState.getInstance().addServerInfo(serverid,serversAddress,clientsPort,coordinationPort);
 			JSONObject mas=new Message().getHelloagain(serverState.getLocalChatroomInfoMap().keySet(),serverid);
 			sendCoorMessage(serversAddress,coordinationPort,mas);
@@ -187,10 +187,10 @@ public class ServerListening  extends Thread  {
 			JSONArray roomlist=(JSONArray) message.get("roomlist");
 			ServerState.getInstance().addRemoteroom(serverid,roomlist);
 		} else if(type.equals("usernumber")){
-			JSONObject mas=new Message().getUsernumber(config.getServerid(),ServerState.getInstance().getUserInfoMap().keySet().size());
+			JSONObject mas=new Message().getUsernumber(config.getServerid(),String.valueOf(ServerState.getInstance().getUserInfoMap().keySet().size()));
 			MessageSend(mas);
 		} else if(type.equals("heartbeat")){
-			JSONObject heartbeat = new Message().getHeartbeat(true,config.getServerid());
+			JSONObject heartbeat = new Message().getHeartbeat("true",config.getServerid());
 			sendCoorMessage(ServerState.getInstance().getCentraladdress(),ServerState.getInstance().getCentralport(),heartbeat);
 		} else if(type.equals("failserver")){
 			JSONArray serverids = (JSONArray) message.get("serverids");

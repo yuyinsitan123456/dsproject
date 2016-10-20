@@ -66,7 +66,7 @@ public class Server  {
 			SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(ServerState.getInstance().getCentraladdress(), ServerState.getInstance().getCentralport());
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sslsocket.getOutputStream(), "UTF-8"));
 			@SuppressWarnings("static-access")
-			JSONObject mas=new Message().requireServerlist(config.getServerid(),config.getServerAddress(),config.getClientsPort(),config.getCoordinationPort());
+			JSONObject mas=new Message().requireServerlist(config.getServerid(),config.getServerAddress(),String.valueOf(config.getClientsPort()),String.valueOf(config.getCoordinationPort()));
 			writer.write(mas + "\n");
 			writer.flush();
 			writer.close();
