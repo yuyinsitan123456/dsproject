@@ -1,0 +1,53 @@
+package au.edu.unimelb.tcp.client;
+import org.kohsuke.args4j.Option;
+
+
+public class ComLineValues {
+	@Option(required=false, name = "-h", aliases="--host", usage="Server host address")
+	private String host="localhost";
+	
+	@Option(required=false, name="-p", aliases="--port", usage="Server port number")
+	private int port = 4441;
+
+	@Option(required=false, name = "-i", aliases="--identity", usage="Client identity")
+	private String identity="mark";
+	
+	@Option(required=false, name = "-n", aliases="--na", usage="Client na")
+	private String name="a";
+	
+	@Option(required=false, name = "-pw", aliases="--password", usage="Client password")
+	private String password="a";
+	
+	@Option(required=false, name = "-d", aliases="--debug", usage="Debug mode")
+	private boolean debug = false;
+	
+	@Option(required=false, name = "-pa", aliases="--path", usage="path")
+	private String path = "DS.jks";
+	
+	public String getHost() {
+		return host;
+	}
+
+	public int getPort() {
+		return port;
+	}
+	
+	public String getIdeneity() {
+		return identity;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	public String getPassword() {
+		return password;
+	}
+	
+	public boolean isDebug() {
+		return debug;
+	}
+	
+	public String getPath() {
+		return path;
+	}
+}
