@@ -49,10 +49,10 @@ public class AuthorizeServer {
 		//the keystore file contains an application's own certificate and private key
 		//keytool -genkey -keystore <keystorename> -keyalg RSA
 		System.setProperty("javax.net.ssl.keyStore",keyFilepath);
-		System.setProperty("javax.net.ssl.trustStore",keyFilepath);
+//		System.setProperty("javax.net.ssl.trustStore",trustFilepath);
 		//Password to access the private key from the keystore file
 		System.setProperty("javax.net.ssl.keyStorePassword","666666");
-		System.setProperty("javax.net.ssl.trustStorePassword", "666666");
+//		System.setProperty("javax.net.ssl.trustStorePassword", "888888");
 
 		// Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
 		System.setProperty("javax.net.debug","all");

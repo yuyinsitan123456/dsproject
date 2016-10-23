@@ -30,7 +30,7 @@ public class Server  {
 		int serversPort = 4443;
 		int coordinationPort = 3333;
 		String keyFilepath = null;
-//		String trustFilepath = null;
+		String trustFilepath = null;
 
 		String serversConf = null;
 		ComLineValues comLineValues = new ComLineValues();
@@ -41,7 +41,7 @@ public class Server  {
 			serverid = comLineValues.getServerid();
 			serversConf = comLineValues.getServersConf();
 			keyFilepath = comLineValues.getKeyFilepath();
-//			trustFilepath = comLineValues.getTrustFilepath();
+			trustFilepath = comLineValues.getTrustFilepath();
 		} catch (CmdLineException ce) {
 			ce.printStackTrace();
 		}

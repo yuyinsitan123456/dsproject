@@ -8,6 +8,6 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="server.Server"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-n s3 -l &quot;F:\essay\ds\serverLists3.txt&quot;"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-n s3 -l serverLists3.txt -k DSk.jks"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="distributed server"/>
 </launchConfiguration>
