@@ -32,7 +32,11 @@ public class ComLineValues {
 			aliases = {"--serversPort"},
 			usage = "Server Port"
 			)
+<<<<<<< HEAD
 	private int serversPort=4441;
+=======
+	private int serversPort;
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 
 	@Option(
 			required = false,
@@ -48,7 +52,11 @@ public class ComLineValues {
 			aliases = {"--keyFilepath"},
 			usage = "Server keyFilepath"
 			)
+<<<<<<< HEAD
 	private String keyFilepath="\\DSk.jks";
+=======
+	private String keyFilepath="DSk.jks";
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 
 	@Option(
 			required = false,
@@ -58,6 +66,7 @@ public class ComLineValues {
 			)
 	private String trustFilepath= "DSt.jks";
 	
+<<<<<<< HEAD
 	@Option(
 			required = false,
 			name = "-ssl",
@@ -66,6 +75,8 @@ public class ComLineValues {
 			)
 	private String ssl= "all";
 	
+=======
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 	public ComLineValues() {
 	}
 
@@ -94,9 +105,12 @@ public class ComLineValues {
 	public String getTrustFilepath() {
 		return this.trustFilepath;
 	}
+<<<<<<< HEAD
 	public String getSsl() {
 		return this.ssl;
 	}
+=======
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 
 }
 

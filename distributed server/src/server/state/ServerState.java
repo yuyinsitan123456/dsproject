@@ -353,6 +353,7 @@ public class ServerState {
 	}
 	
 	public synchronized void deleteServerinfo(JSONArray serverids) {
+<<<<<<< HEAD
 		if(serverids==null){
 			return;
 		}
@@ -374,6 +375,20 @@ public class ServerState {
 			for(String roomid:tempList2){
 				remoteChatroomInfoMap.remove(roomid);
 			}
+=======
+		for (int i = 0; i < serverids.size(); i++) {
+			String serverid = (String) serverids.get(i);
+			for(ServerInfo serverInfo:serverInfoList){
+				if(serverid.equals(serverInfo.getServerid())){
+					serverInfoList.remove(serverInfo);
+				}
+			}
+			for(String roomid:remoteChatroomInfoMap.keySet()){
+				if(serverid.equals(remoteChatroomInfoMap.get(roomid).getManagingServer().getServerid())){
+					remoteChatroomInfoMap.remove(roomid);
+				}
+			}
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		}
 	}
 }

@@ -90,6 +90,7 @@ public class AuthorizeServerState {
 		}
 	}
 
+<<<<<<< HEAD
 	public void changeuserstate(String identity,String serverid) {
 		if(serverInfoList.size()!=0){
 			for(CurrentServerInfo serverInfo:serverInfoList){
@@ -104,4 +105,6 @@ public class AuthorizeServerState {
 		userInfoMap.get(identity).setServer(serverid);
 	}
 
+=======
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 }

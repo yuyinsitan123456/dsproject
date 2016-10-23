@@ -1,0 +1,33 @@
+package server.tools;
+
+import org.kohsuke.args4j.Option;
+
+public class ComLineValues {
+    @Option(
+        required = true,
+        name = "-n",
+        aliases = {"--serverid"},
+        usage = "Server name"
+    )
+    private String serverid;
+    @Option(
+        required = false,
+        name = "-l",
+        aliases = {"--serversConf"},
+        usage = "Server config path"
+    )
+    private String serversConf;
+
+    public ComLineValues() {
+    }
+
+    public String getServerid() {
+        return this.serverid;
+    }
+
+    public String getServersConf() {
+        return this.serversConf;
+    }
+
+}
+

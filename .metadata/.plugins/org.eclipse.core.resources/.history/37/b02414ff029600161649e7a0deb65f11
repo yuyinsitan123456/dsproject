@@ -1,0 +1,121 @@
+package au.edu.unimelb.tcp.client;
+
+import java.io.DataOutputStream;
+
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
+
+public class Client {
+	private static SSLSocket socket;
+
+	private static DataOutputStream out;
+	
+	private State state;
+	
+	private static SSLSocketFactory sSLSocketFactory;
+	
+	private static ArrayList<Listener> listeners;
+	
+	public void init() throws IOException, ParseException {
+		System.setProperty("javax.net.ssl.trustStore", "D://DS.jks");
+		
+		System.setProperty("javax.net.debug","all");
+		state = new State("", "");
+		sSLSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+//		socket =(SSLSocket) sSLSocketFactory.createSocket("ec2-54-165-255-160.compute-1.amazonaws.com", 4441);
+		socket =(SSLSocket) sSLSocketFactory.createSocket("localhost", 4441);
+		out = new DataOutputStream(socket.getOutputStream());
+		// start receiving thread
+		Thread receiveThread = new Thread(new MessageReceiveThread(socket, state));
+		receiveThread.start();		
+	}
+	
+	private static void send(JSONObject obj) throws IOException {
+		out.write((obj.toJSONString() + "\n").getBytes("UTF-8"));
+		out.flush();
+	}
+	
+	// send command and check validity
+	public static void SendMessage(String type, String msg) throws IOException {
+		JSONObject sendToServer = new JSONObject();
+		switch (type) {
+		case "":
+			sendToServer = ClientMessages.getMessage(msg);
+			break;
+		case "list":
+			sendToServer = ClientMessages.getListRequest();
+			break;
+		case "quit":
+			sendToServer = ClientMessages.getQuitRequest();
+			break;
+		case "who":
+			sendToServer = ClientMessages.getWhoRequest();
+			break;
+		case "joinroom":
+			sendToServer = ClientMessages.getJoinRoomRequest(msg);
+			break;
+		case "createroom":
+			sendToServer = ClientMessages.getCreateRoomRequest(msg);
+			break;
+		case "deleteroom":
+			sendToServer = ClientMessages.getDeleteRoomRequest(msg);
+			break;
+		case "newidentity":
+			sendToServer = ClientMessages.getNewIdentityRequest(msg);
+			break;
+		case "login":
+			sendToServer = ClientMessages.getLoginRequest(msg);
+			break;
+		default:
+			break;
+		}
+		send(sendToServer);
+	}
+
+	public static void switchServer(SSLSocket temp_socket, DataOutputStream temp_out) throws IOException {
+		// switch server initiated by the receiving thread
+		// need to use synchronize
+		synchronized(out) {
+			out.close();
+			out = temp_out;
+		}
+		socket = temp_socket;
+	}
+	
+	public void addListener(Listener listener) {
+		if(listeners == null)
+		{
+			listeners = new ArrayList<>();
+		}
+		listeners.add(listener);
+	}
+	
+	public static void notifyListeners(Event event) {
+        Iterator<Listener> iter = listeners.iterator();
+        while (iter.hasNext()) {
+            Listener listener = (Listener) iter.next();
+            listener.handle(event);
+        }
+	}
+	
+	public static void ConnectChatServer(String host, String port) throws UnknownHostException, IOException {
+		socket = (SSLSocket)sSLSocketFactory.createSocket(host, Integer.valueOf(port));
+	}
+	
+	public static void main(String[] args) throws IOException, ParseException{
+		Client client=new Client();
+		client.init();
+		client.send(sendToServer);
+	}
+	
+}

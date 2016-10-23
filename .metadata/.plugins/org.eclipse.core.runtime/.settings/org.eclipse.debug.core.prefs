@@ -1,2 +1,6 @@
 eclipse.preferences.version=1
+<<<<<<< HEAD
 prefWatchExpressions=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<watchExpressions>\r\n<expression enabled\="true" text\="AuthorizeServerState.getInstance().getUserInfoMap().get(name)"/>\r\n</watchExpressions>\r\n
+=======
+prefWatchExpressions=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<watchExpressions>\r\n<expression enabled\="true" text\="AuthorizeServerState.getInstance()"/>\r\n</watchExpressions>\r\n
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c

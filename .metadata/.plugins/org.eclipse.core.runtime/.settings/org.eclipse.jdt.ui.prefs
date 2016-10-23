@@ -12,8 +12,14 @@ org.eclipse.jdt.ui.text.code_templates_migrated=true
 org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><templates/>
 org.eclipse.jdt.ui.text.custom_templates=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><templates/>
 org.eclipse.jdt.ui.text.templates_migrated=true
+<<<<<<< HEAD
 org.eclipse.jface.textfont=1|Consolas|10.0|0|WINDOWS|1|0|0|0|0|0|0|0|0|1|0|0|0|0|Consolas;
 proposalOrderMigrated=true
+=======
+org.eclipse.jface.textfont=1|Consolas|12.0|0|WINDOWS|1|-16|0|0|0|400|0|0|0|0|3|2|1|49|Consolas;
+proposalOrderMigrated=true
+sourceHoverBackgroundColor=255,255,225
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 spelling_locale_initialized=true
 tabWidthPropagated=true
 useAnnotationsPrefPage=true

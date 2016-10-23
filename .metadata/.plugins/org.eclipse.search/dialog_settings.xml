@@ -6,11 +6,16 @@
 	<section name="">
 		<item value="1000" key="org.eclipse.search.resultpage.limit"/>
 	</section>
+<<<<<<< HEAD
 	<section name="">
 		<item value="1000" key="org.eclipse.search.resultpage.limit"/>
 	</section>
 	<section name="TextSearchPage">
 		<item value="3" key="HISTORY_SIZE"/>
+=======
+	<section name="TextSearchPage">
+		<item value="1" key="HISTORY_SIZE"/>
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		<item value="false" key="CASE_SENSITIVE"/>
 		<item value="false" key="REG_EX_SEARCH"/>
 		<item value="false" key="WHOLE_WORD"/>
@@ -19,6 +24,7 @@
 		<section name="EXTENSIONS">
 			<item value="*" key="0"/>
 		</section>
+<<<<<<< HEAD
 		<section name="HISTORY2">
 			<item value="true" key="ignoreCase"/>
 			<item value="0" key="scope"/>
@@ -31,10 +37,13 @@
 			<list key="workingSets">
 			</list>
 		</section>
+=======
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		<section name="HISTORY0">
 			<item value="true" key="ignoreCase"/>
 			<item value="0" key="scope"/>
 			<item value="false" key="isWholeWord"/>
+<<<<<<< HEAD
 			<item value="yes" key="textPattern"/>
 			<item value="false" key="isRegExSearch"/>
 			<list key="fileNamePatterns">
@@ -48,6 +57,9 @@
 			<item value="0" key="scope"/>
 			<item value="false" key="isWholeWord"/>
 			<item value="setL" key="textPattern"/>
+=======
+			<item value="system" key="textPattern"/>
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			<item value="false" key="isRegExSearch"/>
 			<list key="fileNamePatterns">
 				<item value="*"/>

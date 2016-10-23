@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
 <fullyQualifiedTypeName name="java.lang.System"/>
+<<<<<<< HEAD
 <fullyQualifiedTypeName name="java.net.ServerSocket"/>
 <fullyQualifiedTypeName name="java.net.Socket"/>
 <fullyQualifiedTypeName name="javax.net.ssl.SSLServerSocket"/>
+=======
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 </qualifiedTypeNameHistroy>

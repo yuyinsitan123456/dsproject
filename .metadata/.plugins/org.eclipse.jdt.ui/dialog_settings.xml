@@ -2,6 +2,7 @@
 <section name="Workbench">
 	<section name="FatJarPackageWizard">
 		<item value="D:\eclipse\java-latest-released\workspace" key="FatJarPackageWizardPage.ANTSCRIPT_LOCATION"/>
+<<<<<<< HEAD
 		<item value="server1 - distributed server" key="FatJarPackageWizardPage.LAUNCH_CONFIGURATION_SELECTION_NAME"/>
 		<item value="F:\essay\ds\server2.jar" key="FatJarPackageWizardPage.DESTINATION_PATH_SELECTION"/>
 		<item value="false" key="FatJarPackageWizardPage.ANTSCRIPT_SAVE"/>
@@ -12,6 +13,13 @@
 			<item value="F:\essay\ds\sslcentralserver.jar"/>
 			<item value="F:\essay\ds\sslserver.jar"/>
 			<item value="F:\essay\ds\sslclient.jar"/>
+=======
+		<item value="Server - distributed server" key="FatJarPackageWizardPage.LAUNCH_CONFIGURATION_SELECTION_NAME"/>
+		<item value="F:\essay\ds\server.jar" key="FatJarPackageWizardPage.DESTINATION_PATH_SELECTION"/>
+		<item value="false" key="FatJarPackageWizardPage.ANTSCRIPT_SAVE"/>
+		<item value="1" key="FatJarPackageWizardPage.LIBRARY_HANDLING"/>
+		<list key="FatJarPackageWizardPage.DESTINATION_NAMES_ID">
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			<item value="F:\essay\ds\server.jar"/>
 		</list>
 		<list key="FatJarPackageWizardPage.ANTSCRIPT_LOCATION_HISTORY">
@@ -35,9 +43,12 @@
 		<item value="false" key="CASE_SENSITIVE"/>
 		<item value="11" key="INCLUDE_MASK"/>
 	</section>
+<<<<<<< HEAD
 	<section name="BuildPathsPropertyPage">
 		<item value="3" key="pageIndex"/>
 	</section>
+=======
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 	<section name="completion_proposal_size">
 	</section>
 	<section name="JavaElementSearchActions">

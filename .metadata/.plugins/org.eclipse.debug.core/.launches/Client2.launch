@@ -8,6 +8,10 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="au.edu.unimelb.tcp.client.Client"/>
+<<<<<<< HEAD
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-h localhost -p 4441 -i mark2  -n b -pw b -k F:\essay\ds\DSk.jks"/>
+=======
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-h localhost -p 4441 -n a -pw a -i mark2"/>
+>>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="client"/>
 </launchConfiguration>
