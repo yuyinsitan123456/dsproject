@@ -156,8 +156,8 @@ public class AuthorizeServer {
 			AuthorizeServerState.getInstance().changeworkstate(serverid,work);
 		}else if(type.equals("change")){
 			String serverid = (String) message.get("serverid");
-			String username = (String) message.get("username");
-			AuthorizeServerState.getInstance().changeuserstate(username,serverid);
+			String identity = (String) message.get("identity");
+			AuthorizeServerState.getInstance().changeuserstate(identity,serverid);
 		}
 	}
 

@@ -260,10 +260,10 @@ public class Message {
 		return heartbeat;
 	}
 	
-	public static JSONObject getChange(String username,String serverid){
+	public static JSONObject getChange(String identity,String serverid){
 		JSONObject getChange = new JSONObject();
 		getChange.put("type", "change");
-		getChange.put("username", username);
+		getChange.put("identity", identity);
 		getChange.put("serverid", serverid);
 		return getChange;
 	}

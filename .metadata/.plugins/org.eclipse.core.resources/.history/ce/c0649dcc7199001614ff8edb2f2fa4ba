@@ -322,12 +322,10 @@ public class ManagingThread extends Thread {
 			}
 		} else if(type.equals("quit")) {
 			this.run=false;
-			String username = (String) message.get("username");
-			quit(username);
+			quit(this.identity);
 		}else{
-			String username = (String) message.get("username");
 			this.run=false;
-			quit(username);
+			quit(this.identity);
 		} 
 	}
 
@@ -379,7 +377,7 @@ public class ManagingThread extends Thread {
 	}
 
 	@SuppressWarnings("static-access")
-	public void quit(String username) throws IOException{
+	public void quit(String identity) throws IOException{
 		ServerState serverState=ServerState.getInstance();
 		Map<String, UserInfo> userInfoMap=serverState.getUserInfoMap();
 		UserInfo userInfo=userInfoMap.get(identity);
@@ -410,7 +408,7 @@ public class ManagingThread extends Thread {
 			}
 			ServerState.getInstance().ownerquit(members,"MainHall-"+serverId,currentRoomId,identity);
 		}
-		JSONObject change=new Message().getChange(username,"");
+		JSONObject change=new Message().getChange(identity,"");
 		sendCoorMessage(serverState.getCentraladdress(),serverState.getCentralport(),change);
 	}
 }

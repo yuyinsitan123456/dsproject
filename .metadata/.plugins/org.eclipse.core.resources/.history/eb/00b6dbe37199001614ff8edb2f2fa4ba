@@ -322,12 +322,10 @@ public class ManagingThread extends Thread {
 			}
 		} else if(type.equals("quit")) {
 			this.run=false;
-			String username = (String) message.get("username");
-			quit(username);
+			quit(this.identity);
 		}else{
-			String username = (String) message.get("username");
 			this.run=false;
-			quit(username);
+			quit(this.identity);
 		} 
 	}
 

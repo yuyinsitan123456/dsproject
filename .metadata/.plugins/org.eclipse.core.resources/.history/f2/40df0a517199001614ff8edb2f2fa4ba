@@ -7,20 +7,23 @@ public class UserInfo {
 	private String currentChatroom;
 	private Socket socket ;
 	private ManagingThread managingThread;
+	private String ticket;
 
-	public UserInfo(String currentChatroom, Socket socket, ManagingThread managingThread) {
+	public UserInfo(String currentChatroom, Socket socket, ManagingThread managingThread,String ticket) {
 		super();
 		this.currentChatroom = currentChatroom;
 		this.socket = socket;
 		this.managingThread = managingThread;
+		this.ticket = ticket;
 	}
 	
-	public UserInfo(String identity,String currentChatroom, Socket socket, ManagingThread managingThread) {
+	public UserInfo(String identity,String currentChatroom, Socket socket, ManagingThread managingThread,String ticket) {
 		super();
 		this.identity = identity;
 		this.currentChatroom = currentChatroom;
 		this.socket = socket;
 		this.managingThread = managingThread;
+		this.ticket = ticket;
 	}
 
 	public String getIdentity() {
@@ -44,6 +47,10 @@ public class UserInfo {
 		return socket;
 	}
 	
+	public String getTicket() {
+		return ticket;
+	}
+
 	public ManagingThread getManagingThread() {
 		return managingThread;
 	}

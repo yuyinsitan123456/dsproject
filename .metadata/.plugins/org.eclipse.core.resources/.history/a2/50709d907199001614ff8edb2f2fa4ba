@@ -90,10 +90,10 @@ public class AuthorizeServerState {
 		}
 	}
 
-	public void changeuserstate(String username,String serverid) {
+	public void changeuserstate(String identity,String serverid) {
 		if(serverInfoList.size()!=0){
 			for(CurrentServerInfo serverInfo:serverInfoList){
-				if(serverInfo.getServerid().equals(userInfoMap.get(username).getServer())){
+				if(serverInfo.getServerid().equals(userInfoMap.get(identity).getServer())){
 					serverInfo.deleteNumber();
 				}
 				if(serverInfo.getServerid().equals(serverid)){
@@ -101,7 +101,7 @@ public class AuthorizeServerState {
 				}
 			}
 		}
-		userInfoMap.get(username).setServer(serverid);
+		userInfoMap.get(identity).setServer(serverid);
 	}
 
 }

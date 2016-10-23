@@ -101,7 +101,7 @@ public class AuthorizeServerState {
 				}
 			}
 		}
-		userInfoMap.get(username).setServer(serverid);
+		userInfoMap.get(identity).setServer(serverid);
 	}
 
 }
