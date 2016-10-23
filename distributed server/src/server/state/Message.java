@@ -248,11 +248,7 @@ public class Message {
 		failserver.put("type", "failserver");
 		JSONArray serveridlist=new JSONArray();
 		for(String serverid:serverids){
-<<<<<<< HEAD
 			serveridlist.add(serverid);
-=======
-			serverids.add(serverid);
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		}
 		failserver.put("serverids", serveridlist);
 		return failserver;
@@ -264,7 +260,6 @@ public class Message {
 		return heartbeat;
 	}
 	
-<<<<<<< HEAD
 	public static JSONObject getChange(String identity,String serverid){
 		JSONObject getChange = new JSONObject();
 		getChange.put("type", "change");
@@ -273,6 +268,4 @@ public class Message {
 		return getChange;
 	}
 	
-=======
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 }

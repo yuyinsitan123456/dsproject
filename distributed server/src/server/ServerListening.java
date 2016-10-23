@@ -6,19 +6,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-<<<<<<< HEAD
 import java.net.ServerSocket;
 import java.net.Socket;
-=======
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-<<<<<<< HEAD
-=======
-import javax.net.ssl.SSLServerSocket;
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -33,7 +26,6 @@ import server.state.ServerInfo;
 import server.state.ServerState;
 
 public class ServerListening  extends Thread  {
-<<<<<<< HEAD
 	private ServerSocket listeningServerSocket;
 	private BufferedReader in;
 	private BufferedWriter out;
@@ -44,23 +36,12 @@ public class ServerListening  extends Thread  {
 		try {
 			this.listeningServerSocket = serverSocket;
 			this.ssl=ssl;
-=======
-	private SSLServerSocket listeningServerSocket;
-	private BufferedReader in;
-	private BufferedWriter out;
-	private JSONParser parser = new JSONParser();
-
-	public ServerListening(SSLServerSocket serverSocket) {
-		try {
-			this.listeningServerSocket = serverSocket;
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	@Override
 	public void run() {
-<<<<<<< HEAD
 		Socket socket=null;
 		try {
 			//keep listening other servers message
@@ -72,15 +53,6 @@ public class ServerListening  extends Thread  {
 				}
 				//				System.out.println(Thread.currentThread().getName() 
 				//						+ " - server conection accepted");
-=======
-		SSLSocket socket=null;
-		try {
-			//keep listening other servers message
-			while(true) {
-				socket=(SSLSocket)listeningServerSocket.accept();
-//				System.out.println(Thread.currentThread().getName() 
-//						+ " - server conection accepted");
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 				this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 				this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 				MessageReceive((JSONObject)this.parser.parse(this.in.readLine()));
@@ -91,13 +63,9 @@ public class ServerListening  extends Thread  {
 		} catch (ParseException e) {
 			try {
 				if(this.in!=null)this.in.close();
-<<<<<<< HEAD
 				if(socket!=null){
 					socket.close();
 				}
-=======
-				if(socket!=null)socket.close();
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -217,33 +185,19 @@ public class ServerListening  extends Thread  {
 			ServerState.getInstance().initServerList(serverlist);
 		} else if(type.equals("helloServer")){
 			String serverid = (String) message.get("serverid");
-<<<<<<< HEAD
 			String serversAddress=(String) message.get("serverAddress");
 			int clientsPort = Integer.parseInt((String) message.get("clientsPort"));
 			int coordinationPort =Integer.parseInt((String) message.get("coordinationPort"));
 			ServerState.getInstance().addServerInfo(serverid,serversAddress,clientsPort,coordinationPort);
 			JSONObject mas=new Message().getHelloagain(serverState.getLocalChatroomInfoMap().keySet(),serverState.getConfig().getServerid());
-=======
-			String serversAddress=(String) message.get("serversAddress");
-			int clientsPort = Integer.parseInt((String) message.get("clientsPort"));
-			int coordinationPort =Integer.parseInt((String) message.get("coordinationPort"));
-			ServerState.getInstance().addServerInfo(serverid,serversAddress,clientsPort,coordinationPort);
-			JSONObject mas=new Message().getHelloagain(serverState.getLocalChatroomInfoMap().keySet(),serverid);
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			sendCoorMessage(serversAddress,coordinationPort,mas);
 		} else if(type.equals("helloagain")){
 			String serverid = (String) message.get("serverid");
 			JSONArray roomlist=(JSONArray) message.get("roomlist");
 			ServerState.getInstance().addRemoteroom(serverid,roomlist);
-<<<<<<< HEAD
 //		} else if(type.equals("usernumber")){
 //			JSONObject mas=new Message().getUsernumber(config.getServerid(),String.valueOf(ServerState.getInstance().getUserInfoMap().keySet().size()));
 //			MessageSend(mas);
-=======
-		} else if(type.equals("usernumber")){
-			JSONObject mas=new Message().getUsernumber(config.getServerid(),String.valueOf(ServerState.getInstance().getUserInfoMap().keySet().size()));
-			MessageSend(mas);
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		} else if(type.equals("heartbeat")){
 			JSONObject heartbeat = new Message().getHeartbeat("true",config.getServerid());
 			sendCoorMessage(ServerState.getInstance().getCentraladdress(),ServerState.getInstance().getCentralport(),heartbeat);
@@ -260,7 +214,6 @@ public class ServerListening  extends Thread  {
 	}
 
 	public void sendCoorMessage(String address,int port,JSONObject message) throws IOException{
-<<<<<<< HEAD
 		SSLSocketFactory sslsocketfactory =null;
 		Socket serverSocket=null;
 		if("all".equals(ssl)){
@@ -269,10 +222,6 @@ public class ServerListening  extends Thread  {
 		}else{
 			serverSocket =new Socket(address,port);
 		}
-=======
-		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		DataOutputStream writer =new DataOutputStream((serverSocket.getOutputStream()));
 		System.out.println("send to otherserver:"+message);
 		writer.write((message + "\n").getBytes("UTF-8"));
@@ -280,7 +229,6 @@ public class ServerListening  extends Thread  {
 		writer.close();
 		serverSocket.close();
 	}
-<<<<<<< HEAD
 
 	public void sendCoorMessage(List<ServerInfo> serverInfoList,JSONObject message) throws IOException{
 		for(ServerInfo serverInfo:serverInfoList){
@@ -292,13 +240,6 @@ public class ServerListening  extends Thread  {
 			}else{
 				serverSocket =new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
 			}
-=======
-	
-	public void sendCoorMessage(List<ServerInfo> serverInfoList,JSONObject message) throws IOException{
-		for(ServerInfo serverInfo:serverInfoList){
-			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			DataOutputStream writer =new DataOutputStream((serverSocket.getOutputStream()));
 			System.out.println("send to otherserver:"+message);
 			writer.write((message + "\n").getBytes("UTF-8"));

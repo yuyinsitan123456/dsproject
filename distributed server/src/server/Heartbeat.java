@@ -2,11 +2,8 @@ package server;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-<<<<<<< HEAD
 import java.net.Socket;
 import java.net.UnknownHostException;
-=======
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,26 +17,16 @@ import server.state.Message;
 
 public class Heartbeat extends Thread {
 
-<<<<<<< HEAD
 	private String ssl="all";
 	public  Heartbeat(String ssl){
 		this.ssl=ssl;
-=======
-
-	public  Heartbeat(){
-
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 	}
 
 	@Override
 	public void run() {
 		while (true) {
 			try {
-<<<<<<< HEAD
 				Thread.sleep(2000);
-=======
-				Thread.sleep(10000);
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			} catch(InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
@@ -59,11 +46,7 @@ public class Heartbeat extends Thread {
 				} 
 			}
 			try {
-<<<<<<< HEAD
 				Thread.sleep(2000);
-=======
-				Thread.sleep(10000);
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			} catch(InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
@@ -80,10 +63,6 @@ public class Heartbeat extends Thread {
 			}
 			if(!noworkserverids.isEmpty()){
 				AuthorizeServerState.getInstance().deleteServers(noworkserverids);
-<<<<<<< HEAD
-=======
-
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 				for(String workserverid:workserverids){
 					for (CurrentServerInfo serverInfo : serverList) {
 						@SuppressWarnings("static-access")
@@ -101,7 +80,6 @@ public class Heartbeat extends Thread {
 		}
 	}
 
-<<<<<<< HEAD
 	public void sendCoorMessage(String address,int port,JSONObject message) throws IOException {
 		SSLSocketFactory sslsocketfactory =null;
 		Socket serverSocket=null;
@@ -127,16 +105,5 @@ public class Heartbeat extends Thread {
 		} finally{
 			if(serverSocket!=null)serverSocket.close();
 		}
-=======
-	public void sendCoorMessage(String address,int port,JSONObject message) throws IOException{
-		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
-		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
-		System.out.println("send to chatserver:"+message);
-		writer.write(message + "\n");
-		writer.flush();
-		writer.close();
-		serverSocket.close();
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 	}
 }

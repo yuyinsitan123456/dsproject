@@ -4,10 +4,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-<<<<<<< HEAD
 import java.net.Socket;
-=======
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,30 +21,18 @@ import org.json.simple.parser.ParseException;
 import server.config.Config;
 
 public class ManagingThread extends Thread {
-<<<<<<< HEAD
 	private Socket socket;
-=======
-	private SSLSocket socket;
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 	private BufferedReader in;
 	private JSONParser parser = new JSONParser();
 	private String identity;
 	private boolean run = true;
 	private MessageSendThread messageSendThread;
-<<<<<<< HEAD
 	private String ssl="all";
 	public ManagingThread(Socket socket, MessageSendThread messageSendThread,String ssl) {
 		try {
 			this.socket = socket;
 			this.messageSendThread=messageSendThread;
 			this.ssl=ssl;
-=======
-
-	public ManagingThread(SSLSocket socket, MessageSendThread messageSendThread) {
-		try {
-			this.socket = socket;
-			this.messageSendThread=messageSendThread;
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -249,11 +234,7 @@ public class ManagingThread extends Thread {
 						userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, roomid));
 					}
 					for(String member:lmembers){
-<<<<<<< HEAD
 						userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, roomid));
-=======
-						userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(member,currentRoomId, roomid));
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 					}
 					ServerState.getInstance().localjoin( roomid, currentRoomId, identity);
 				}else{
@@ -266,11 +247,8 @@ public class ManagingThread extends Thread {
 							userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, roomid));
 						}
 						ServerState.getInstance().remotejoin(currentRoomId, identity);
-<<<<<<< HEAD
 						JSONObject change=new Message().getChange(identity,serverInfo.getServerid());
 						sendCoorMessage(serverState.getCentraladdress(),serverState.getCentralport(),change);
-=======
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 						this.run=false;
 					}else{
 						this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, currentRoomId));
@@ -363,7 +341,6 @@ public class ManagingThread extends Thread {
 
 	public void sendCoorMessage(List<ServerInfo> serverInfoList,JSONObject message) throws IOException{
 		for(ServerInfo serverInfo:serverInfoList){
-<<<<<<< HEAD
 			SSLSocketFactory sslsocketfactory =null;
 			Socket serverSocket=null;
 			if("all".equals(ssl)){
@@ -372,10 +349,6 @@ public class ManagingThread extends Thread {
 			}else{
 				serverSocket =new Socket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
 			}
-=======
-			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			DataOutputStream writer =new DataOutputStream((serverSocket.getOutputStream()));
 			writer.write((message + "\n").getBytes("UTF-8"));
 			writer.flush();
@@ -383,7 +356,6 @@ public class ManagingThread extends Thread {
 			serverSocket.close();
 		}
 	}
-<<<<<<< HEAD
 	
 	public void sendCoorMessage(String address,int port,JSONObject message) throws IOException{
 		SSLSocketFactory sslsocketfactory =null;
@@ -401,8 +373,6 @@ public class ManagingThread extends Thread {
 		writer.close();
 		serverSocket.close();
 	}
-=======
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 
 	@SuppressWarnings("static-access")
 	public void quit(String identity) throws IOException{
@@ -436,10 +406,7 @@ public class ManagingThread extends Thread {
 			}
 			ServerState.getInstance().ownerquit(members,"MainHall-"+serverId,currentRoomId,identity);
 		}
-<<<<<<< HEAD
 		JSONObject change=new Message().getChange(identity,"");
 		sendCoorMessage(serverState.getCentraladdress(),serverState.getCentralport(),change);
-=======
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 	}
 }

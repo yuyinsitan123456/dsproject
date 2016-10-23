@@ -4,11 +4,8 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-<<<<<<< HEAD
 import java.net.ServerSocket;
 import java.net.Socket;
-=======
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,22 +31,16 @@ public class AuthorizeServer {
 		BufferedReader in;
 		DataOutputStream out;
 		String keyFilepath = null;
-<<<<<<< HEAD
 		SSLServerSocketFactory sslserversocketfactory =null;
 		String ssl="all";
 		//		String trustFilepath = null;
 
-=======
-//		String trustFilepath = null;
-		
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		ComLineValues comLineValues = new ComLineValues();
 		CmdLineParser cparser = new CmdLineParser(comLineValues);
 
 		try {
 			cparser.parseArgument(args);
 			keyFilepath = comLineValues.getKeyFilepath();
-<<<<<<< HEAD
 			serversPort = comLineValues.getServersPort();
 			ssl=comLineValues.getSsl();
 			//			trustFilepath = comLineValues.getTrustFilepath();
@@ -60,23 +51,12 @@ public class AuthorizeServer {
 		JSONParser parser = new JSONParser();
 		// Read configuration in the config file
 		ServerSocket listeningServerSocket = null;
-=======
-//			trustFilepath = comLineValues.getTrustFilepath();
-		} catch (CmdLineException ce) {
-			ce.printStackTrace();
-		}
-		
-		JSONParser parser = new JSONParser();
-		// Read configuration in the config file
-		SSLServerSocket listeningServerSocket = null;
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		//Specify the keystore details (this can be specified as VM arguments as well)
 		//the keystore file contains an application's own certificate and private key
 		//keytool -genkey -keystore <keystorename> -keyalg RSA
 		System.setProperty("javax.net.ssl.keyStore",keyFilepath);
 		System.setProperty("javax.net.ssl.trustStore",keyFilepath);
 		//Password to access the private key from the keystore file
-<<<<<<< HEAD
 		System.setProperty("javax.net.ssl.keyStorePassword","888888");
 		System.setProperty("javax.net.ssl.trustStorePassword", "888888");
 
@@ -96,45 +76,17 @@ public class AuthorizeServer {
 			Socket serverSocket =null;
 
 			new Heartbeat(ssl).start();
-=======
-		System.setProperty("javax.net.ssl.keyStorePassword","666666");
-		System.setProperty("javax.net.ssl.trustStorePassword", "666666");
-
-		// Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
-		System.setProperty("javax.net.debug","all");
-
-		try {
-			// Create a server socket listening on given port
-			//Create SSL server socket
-			SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory
-					.getDefault();
-
-			listeningServerSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(serversPort);
-
-			SSLSocket serverSocket =null;
-
-			new Heartbeat().start();
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 
 			while (true) {
 
 				//Accept an incoming client connection request
 				//Accept client connection
-<<<<<<< HEAD
 				serverSocket = listeningServerSocket.accept();
 				//				System.out.println(Thread.currentThread().getName() 
 				//						+ " - server conection accepted");
 				in = new BufferedReader(new InputStreamReader(serverSocket.getInputStream(), "UTF-8"));
 				out = new DataOutputStream(serverSocket.getOutputStream());
 				MessageReceive(out,(JSONObject)parser.parse(in.readLine()),ssl);
-=======
-				serverSocket = (SSLSocket) listeningServerSocket.accept();
-//				System.out.println(Thread.currentThread().getName() 
-//						+ " - server conection accepted");
-				in = new BufferedReader(new InputStreamReader(serverSocket.getInputStream(), "UTF-8"));
-				out = new DataOutputStream(serverSocket.getOutputStream());
-				MessageReceive(out,(JSONObject)parser.parse(in.readLine()));
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 				out.close();
 				in.close();
 				serverSocket.close();
@@ -153,11 +105,7 @@ public class AuthorizeServer {
 	}
 
 	@SuppressWarnings("static-access")
-<<<<<<< HEAD
 	public static void MessageReceive(DataOutputStream out,JSONObject message, String ssl) throws IOException, ParseException {
-=======
-	public static void MessageReceive(DataOutputStream out,JSONObject message) throws IOException, ParseException {
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		System.out.println("Receive:"+message);
 		String type = (String)message.get("type");
 		if(type.equals("serverList")) {
@@ -172,70 +120,16 @@ public class AuthorizeServer {
 				sendList.add(e);
 			}
 			JSONObject mas=(JSONObject) new Message().getServerList(sendList);
-<<<<<<< HEAD
 			sendCoorMessage(serversAddress,coordinationPort,mas,ssl);
 			AuthorizeServerState.getInstance().addServerInfo(new CurrentServerInfo(serverid, serversAddress, clientsPort, coordinationPort,0));
-=======
-			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serversAddress,coordinationPort);
-			DataOutputStream writer = new DataOutputStream(serverSocket.getOutputStream());
-			System.out.println("send to chatserver:"+message);
-			writer.write((mas + "\n").getBytes("UTF-8"));
-			writer.flush();
-			writer.close();
-			serverSocket.close();
-			AuthorizeServerState.getInstance().addServerInfo(new CurrentServerInfo(serverid, serversAddress, clientsPort, coordinationPort));
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 		}else if(type.equals("login")){
 			String name = (String) message.get("username");
 			String password = (String) message.get("password");
 			AvailableUserInfo availableUserInfo=AuthorizeServerState.getInstance().getUserInfoMap().get(name);
-<<<<<<< HEAD
 			if(availableUserInfo!=null&&password.equals(availableUserInfo.getPassword())&&"".equals(availableUserInfo.getServer())){
 				List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
 				//				JSONObject mas1=new Message().requireUserNumber();
 				String flagserverid=getserverid(serverList);
-=======
-			if(availableUserInfo!=null&&password.equals(availableUserInfo.getPassword())&&availableUserInfo.getUserState()){
-				List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
-				JSONObject mas1=new Message().requireUserNumber();
-				String flagserverid=null;
-				if(serverList.size()!=0){
-					SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-					SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverList.get(0).getServerAddress(),serverList.get(0).getCoordinationPort());
-					DataOutputStream writer =new DataOutputStream(serverSocket.getOutputStream());
-					System.out.println("send to chatserver:"+mas1);
-					writer.write((mas1 + "\n").getBytes("UTF-8"));
-					writer.flush();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(serverSocket.getInputStream(), "UTF-8"));
-					JSONParser parser = new JSONParser();
-					JSONObject mas = (JSONObject) parser.parse(reader.readLine());
-					System.out.println("chatserverReceive:"+mas);
-					writer.close();
-					reader.close();
-					serverSocket.close();
-					int flag=Integer.parseInt((String)mas.get("number"));
-					flagserverid=(String)mas.get("serverid");
-					for(int i=1;i<serverList.size();i++){
-						SSLSocketFactory sslsocketfactory1 = (SSLSocketFactory) SSLSocketFactory.getDefault();
-						SSLSocket serverSocket1 = (SSLSocket) sslsocketfactory1.createSocket(serverList.get(i).getServerAddress(),serverList.get(i).getCoordinationPort());
-						DataOutputStream writer1 =new DataOutputStream((serverSocket1.getOutputStream()));
-						System.out.println("send to chatserver:"+mas1);
-						writer1.write((mas1 + "\n").getBytes("UTF-8"));
-						writer1.flush();
-						BufferedReader reader1 = new BufferedReader(new InputStreamReader(serverSocket1.getInputStream(), "UTF-8"));
-						mas = (JSONObject) parser.parse(reader1.readLine());
-						System.out.println("chatserverReceive:"+mas);
-						if(Integer.parseInt((String)mas.get("number"))<flag){
-							flag=Integer.parseInt((String)mas.get("number"));
-							flagserverid=(String)mas.get("serverid");
-						}
-						writer1.close();
-						reader1.close();
-						serverSocket1.close();
-					}
-				}
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 				if(flagserverid!=null){
 					for(CurrentServerInfo serverInfo:serverList){
 						if(flagserverid.equals(serverInfo.getServerid())){
@@ -249,11 +143,7 @@ public class AuthorizeServer {
 						}
 					}
 				}
-<<<<<<< HEAD
 				availableUserInfo.setServer(flagserverid);
-=======
-				availableUserInfo.setUserState(false);
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 			}else{
 				JSONObject mas=new Message().getUserAuthorizeFail();
 				System.out.println("send to client:"+message);
@@ -264,7 +154,6 @@ public class AuthorizeServer {
 			String serverid = (String) message.get("serverid");
 			boolean work = Boolean.parseBoolean((String) message.get("working"));
 			AuthorizeServerState.getInstance().changeworkstate(serverid,work);
-<<<<<<< HEAD
 		}else if(type.equals("change")){
 			String serverid = (String) message.get("serverid");
 			String identity = (String) message.get("identity");
@@ -355,9 +244,6 @@ public class AuthorizeServer {
 			}
 		}
 		return flagserverid;
-=======
-		}
->>>>>>> 1fda8c464f619bf4e55479fa196a32b9e809799c
 	}
 
 }
