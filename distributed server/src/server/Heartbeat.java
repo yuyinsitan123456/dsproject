@@ -83,6 +83,7 @@ public class Heartbeat extends Thread {
 		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream(), "UTF-8"));
+		System.out.println("send to chatserver:"+message);
 		writer.write(message + "\n");
 		writer.flush();
 		writer.close();

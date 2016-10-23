@@ -29,6 +29,8 @@ public class Server  {
 //		String serversAddress="http://localhost";
 		int serversPort = 4443;
 		int coordinationPort = 3333;
+		String keyFilepath = null;
+		String trustFilepath = null;
 
 		String serversConf = null;
 		ComLineValues comLineValues = new ComLineValues();
@@ -38,6 +40,8 @@ public class Server  {
 			parser.parseArgument(args);
 			serverid = comLineValues.getServerid();
 			serversConf = comLineValues.getServersConf();
+			keyFilepath = comLineValues.getKeyFilepath();
+			trustFilepath = comLineValues.getTrustFilepath();
 		} catch (CmdLineException ce) {
 			ce.printStackTrace();
 		}
@@ -51,14 +55,14 @@ public class Server  {
 		//Specify the keystore details (this can be specified as VM arguments as well)
 		//the keystore file contains an application's own certificate and private key
 		//keytool -genkey -keystore <keystorename> -keyalg RSA
-		System.setProperty("javax.net.ssl.keyStore","DS.jks");
-		System.setProperty("javax.net.ssl.trustStore","DS.jks");
+		System.setProperty("javax.net.ssl.keyStore",keyFilepath);
+		System.setProperty("javax.net.ssl.trustStore",trustFilepath);
 		//Password to access the private key from the keystore file
 		System.setProperty("javax.net.ssl.keyStorePassword","888888");
-		System.setProperty("javax.net.ssl.trustStorePassword", "888888");
+		System.setProperty("javax.net.ssl.trustStorePassword", "666666");
 
 		// Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
-		System.setProperty("javax.net.debug","none");
+		System.setProperty("javax.net.debug","all");
 
 		try {
 			
@@ -67,6 +71,7 @@ public class Server  {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sslsocket.getOutputStream(), "UTF-8"));
 			@SuppressWarnings("static-access")
 			JSONObject mas=new Message().requireServerlist(config.getServerid(),config.getServerAddress(),String.valueOf(config.getClientsPort()),String.valueOf(config.getCoordinationPort()));
+			System.out.println("send to centralserver:"+mas);
 			writer.write(mas + "\n");
 			writer.flush();
 			writer.close();

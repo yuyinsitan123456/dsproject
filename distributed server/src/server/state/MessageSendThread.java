@@ -54,6 +54,7 @@ public class MessageSendThread extends Thread {
 	}
 
 	public void MessageSend(JSONObject msg) throws IOException {
+		System.out.println("send to client:"+msg);
 		this.out.write((msg.toJSONString() + "\n").getBytes("UTF-8"));
 		this.out.flush();
 	}

@@ -79,7 +79,7 @@ public class ServerListening  extends Thread  {
 	}
 	@SuppressWarnings({ "static-access" })
 	public void MessageReceive(JSONObject message) throws IOException, ParseException {
-		System.out.println(message);
+		System.out.println("otherserverReceive:"+message);
 		String type = (String)message.get("type");
 		ServerState serverState=ServerState.getInstance();
 		Config config=serverState.getConfig();
@@ -199,6 +199,7 @@ public class ServerListening  extends Thread  {
 	}
 
 	public void MessageSend(JSONObject msg) throws IOException {
+		System.out.println("send to otherserver:"+msg);
 		this.out.write(msg.toJSONString() + "\n");
 		this.out.flush();
 	}
@@ -207,6 +208,7 @@ public class ServerListening  extends Thread  {
 		SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 		SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(address,port);
 		DataOutputStream writer =new DataOutputStream((serverSocket.getOutputStream()));
+		System.out.println("send to otherserver:"+message);
 		writer.write((message + "\n").getBytes("UTF-8"));
 		writer.flush();
 		writer.close();
@@ -218,6 +220,7 @@ public class ServerListening  extends Thread  {
 			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 			SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverInfo.getServerAddress(),serverInfo.getCoordinationPort());
 			DataOutputStream writer =new DataOutputStream((serverSocket.getOutputStream()));
+			System.out.println("send to otherserver:"+message);
 			writer.write((message + "\n").getBytes("UTF-8"));
 			writer.flush();
 			writer.close();

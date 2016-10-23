@@ -4,19 +4,19 @@ import org.kohsuke.args4j.Option;
 
 public class ComLineValues {
 	@Option(
-			required = true,
+			required = false,
 			name = "-n",
 			aliases = {"--serverid"},
 			usage = "Server name"
 			)
-	private String serverid;
+	private String serverid="s";
 	@Option(
 			required = false,
 			name = "-l",
 			aliases = {"--serversConf"},
 			usage = "Server config path"
 			)
-	private String serversConf;
+	private String serversConf= "C:\\serverLists2.txt";
 
 	@Option(
 			required = false,
@@ -25,7 +25,7 @@ public class ComLineValues {
 			usage = "Server Address"
 			)
 	private String serversAddress;
-	
+
 	@Option(
 			required = false,
 			name = "-p",
@@ -33,7 +33,7 @@ public class ComLineValues {
 			usage = "Server Port"
 			)
 	private int serversPort;
-	
+
 	@Option(
 			required = false,
 			name = "-c",
@@ -42,17 +42,33 @@ public class ComLineValues {
 			)
 	private int coordinationPort;
 
+	@Option(
+			required = false,
+			name = "-k",
+			aliases = {"--keyFilepath"},
+			usage = "Server keyFilepath"
+			)
+	private String keyFilepath="DSk.jks";
+
+	@Option(
+			required = false,
+			name = "-t",
+			aliases = {"--trustFilepath"},
+			usage = "Server trustFilepath"
+			)
+	private String trustFilepath= "DSt.jks";
+	
 	public ComLineValues() {
 	}
 
 	public String getServerid() {
 		return this.serverid;
 	}
-	
+
 	public int getServersPort() {
 		return this.serversPort;
 	}
-	
+
 	public String getServersAddress() {
 		return this.serversAddress;
 	}
@@ -62,6 +78,13 @@ public class ComLineValues {
 	}
 	public String getServersConf() {
 		return this.serversConf;
+	}
+	
+	public String getKeyFilepath() {
+		return this.keyFilepath;
+	}
+	public String getTrustFilepath() {
+		return this.trustFilepath;
 	}
 
 }

@@ -68,7 +68,7 @@ public class ManagingThread extends Thread {
 	//main logical part
 	@SuppressWarnings({ "static-access" })
 	public void MessageReceive(JSONObject message) throws IOException, ParseException {
-		System.out.println(message);
+		System.out.println("clientReceive:"+message);
 		String type = (String)message.get("type");
 		if(type.equals("newidentity")) {
 			if((String) message.get("ticket")==null){
@@ -82,25 +82,46 @@ public class ManagingThread extends Thread {
 				if(m.matches()&&!serverState.getUserInfoMap().keySet().contains(identity)){
 					Config config=serverState.getConfig();
 					List<ServerInfo> serverInfoList=serverState.getServerInfoList();
-					JSONObject lockIdR=new Message().getLockIdentityRequest(config.getServerid(), identity);
-					sendCoorMessage(serverInfoList,lockIdR);
-					boolean flag=true;
-					while(true){
-						Map<String,Map<String,String>> userInfoVoteSet=ServerState.getInstance().getUserInfoVoteSet();
-						if(userInfoVoteSet.containsKey(identity)){
-							Map<String,String> userInfoVotes=userInfoVoteSet.get(identity);
-							if(userInfoVotes!=null&&userInfoVotes.size()==serverInfoList.size()){
-								for(ServerInfo serverInfo:serverInfoList){
-									flag=flag&&("true".equals(userInfoVotes.get(serverInfo.getServerid())));
+					if(!serverInfoList.isEmpty()){
+						JSONObject lockIdR=new Message().getLockIdentityRequest(config.getServerid(), identity);
+						sendCoorMessage(serverInfoList,lockIdR);
+						boolean flag=true;
+						while(true){
+							Map<String,Map<String,String>> userInfoVoteSet=ServerState.getInstance().getUserInfoVoteSet();
+							if(userInfoVoteSet.containsKey(identity)){
+								Map<String,String> userInfoVotes=userInfoVoteSet.get(identity);
+								if(userInfoVotes!=null&&userInfoVotes.size()==serverInfoList.size()){
+									for(ServerInfo serverInfo:serverInfoList){
+										flag=flag&&("true".equals(userInfoVotes.get(serverInfo.getServerid())));
+									}
+									break;
 								}
-								break;
 							}
 						}
-					}
-					this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
-					JSONObject leaseIdR=new Message().getReleasingIdentity(config.getServerid(), identity);
-					sendCoorMessage(serverInfoList,leaseIdR);
-					if(flag){
+						this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
+						JSONObject leaseIdR=new Message().getReleasingIdentity(config.getServerid(), identity);
+						sendCoorMessage(serverInfoList,leaseIdR);
+						if(flag){
+							String currentChatroom = "MainHall-"+config.getServerid();
+							UserInfo userInfo = new UserInfo(identity,currentChatroom,socket,this);
+							this.setIdentity(identity);
+							Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+							Map<String,LocalChatroomInfo> localChatroomInfoMap = serverState.getLocalChatroomInfoMap();
+							LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(currentChatroom);
+							List<String> members = localChatroomInfo.getMembers();
+							if(members!=null){
+								for(String member : members) {
+									userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,"", currentChatroom));
+								}
+							}
+							this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(this.identity,"", currentChatroom));
+							ServerState.getInstance().newidentity(identity, userInfo, currentChatroom);
+						}else{
+							this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
+							ServerState.getInstance().deleteUserInfoVoteSets(identity, serverInfoList);
+						}
+					}else{
+						this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf("true")));
 						String currentChatroom = "MainHall-"+config.getServerid();
 						UserInfo userInfo = new UserInfo(identity,currentChatroom,socket,this);
 						this.setIdentity(identity);
@@ -115,9 +136,6 @@ public class ManagingThread extends Thread {
 						}
 						this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(this.identity,"", currentChatroom));
 						ServerState.getInstance().newidentity(identity, userInfo, currentChatroom);
-					}else{
-						this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply(String.valueOf(flag)));
-						ServerState.getInstance().deleteUserInfoVoteSets(identity, serverInfoList);
 					}
 				}else{
 					this.getMessageSendThread().getMessageQueue().add(new Message().getClientReply("false"));
@@ -153,25 +171,40 @@ public class ManagingThread extends Thread {
 			if(m.matches()&&!this.identity.equals(serverState.getLocalChatroomInfoMap().get(currentRoomId).getOwnerIdentity())&&!serverState.getLocalChatroomInfoMap().containsKey(roomid)&&!serverState.getRemoteChatroomInfoMap().containsKey(roomid)){
 				Config config=serverState.getConfig();
 				List<ServerInfo> serverInfoList=serverState.getServerInfoList();
-				JSONObject lockR=new Message().getLockRoomRequest(config.getServerid(), roomid);
-				sendCoorMessage(serverInfoList,lockR);
-				boolean flag=true;
-				while(true){
-					Map<String,Map<String,String>> chatroomVoteSet=ServerState.getInstance().getChatroomVoteSet();
-					if(chatroomVoteSet.containsKey(roomid)){
-						Map<String,String> chatroomVotes=chatroomVoteSet.get(roomid);
-						if(chatroomVotes.size()==serverInfoList.size()){
-							for(ServerInfo serverInfo:serverInfoList){
-								flag=flag&&("true".equals(chatroomVotes.get(serverInfo.getServerid())));
+				if(!serverInfoList.isEmpty()){
+					JSONObject lockR=new Message().getLockRoomRequest(config.getServerid(), roomid);
+					sendCoorMessage(serverInfoList,lockR);
+					boolean flag=true;
+					while(true){
+						Map<String,Map<String,String>> chatroomVoteSet=ServerState.getInstance().getChatroomVoteSet();
+						if(chatroomVoteSet.containsKey(roomid)){
+							Map<String,String> chatroomVotes=chatroomVoteSet.get(roomid);
+							if(chatroomVotes.size()==serverInfoList.size()){
+								for(ServerInfo serverInfo:serverInfoList){
+									flag=flag&&("true".equals(chatroomVotes.get(serverInfo.getServerid())));
+								}
+								break;
 							}
-							break;
 						}
 					}
-				}
-				this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid,String.valueOf(flag)));
-				JSONObject leaseIdR=new Message().getReleaseRoomRespone(config.getServerid(),roomid, String.valueOf(flag));
-				sendCoorMessage(serverInfoList,leaseIdR);
-				if(flag){
+					this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid,String.valueOf(flag)));
+					JSONObject leaseIdR=new Message().getReleaseRoomRespone(config.getServerid(),roomid, String.valueOf(flag));
+					sendCoorMessage(serverInfoList,leaseIdR);
+					if(flag){
+						Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
+						Map<String,LocalChatroomInfo> localChatroomInfoMap = serverState.getLocalChatroomInfoMap();
+						LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(currentRoomId);
+						List<String> members = localChatroomInfo.getMembers();
+						for(String member : members) {
+							userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, roomid));
+						}
+						ServerState.getInstance().createroom(roomid, currentRoomId, identity);
+					}else{
+						ServerState.getInstance().deleteChatroomVotes(roomid,serverInfoList);
+						this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid, String.valueOf(flag)));
+					}
+				}else{
+					this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid,String.valueOf("true")));
 					Map<String,UserInfo> userInfoMap = serverState.getUserInfoMap();
 					Map<String,LocalChatroomInfo> localChatroomInfoMap = serverState.getLocalChatroomInfoMap();
 					LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(currentRoomId);
@@ -180,9 +213,6 @@ public class ManagingThread extends Thread {
 						userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, roomid));
 					}
 					ServerState.getInstance().createroom(roomid, currentRoomId, identity);
-				}else{
-					ServerState.getInstance().deleteChatroomVotes(roomid,serverInfoList);
-					this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid, String.valueOf(flag)));
 				}
 			}else{
 				this.getMessageSendThread().getMessageQueue().add(new Message().getRoomCreateReply(roomid,"false"));
