@@ -223,6 +223,7 @@ public class ManagingThread extends Thread {
 		} else if(type.equals("join")) {
 			ServerState serverState=ServerState.getInstance();
 			String roomid = (String) message.get("roomid");
+			String username = (String) message.get("username");
 			UserInfo userInfo=serverState.getUserInfoMap().get(this.identity);
 			String currentRoomId=userInfo.getCurrentChatroom();
 			Map<String,LocalChatroomInfo> localChatroomInfoMap=serverState.getLocalChatroomInfoMap();
@@ -248,6 +249,8 @@ public class ManagingThread extends Thread {
 							userInfoMap.get(member).getManagingThread().getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, roomid));
 						}
 						ServerState.getInstance().remotejoin(currentRoomId, identity);
+						JSONObject change=new Message().getChange(username,serverInfo.getServerid());
+						sendCoorMessage(serverState.getCentraladdress(),serverState.getCentralport(),change);
 						this.run=false;
 					}else{
 						this.getMessageSendThread().getMessageQueue().add(new Message().getChangeRoomReply(identity,currentRoomId, currentRoomId));
@@ -261,9 +264,6 @@ public class ManagingThread extends Thread {
 			String former = (String) message.get("former");
 			String roomid = (String) message.get("roomid");
 			String identity = (String) message.get("identity");
-			String username = (String) message.get("username");
-			JSONObject change=new Message().getChange(username, ServerState.getInstance().getConfig().getServerid());
-			sendCoorMessage(serverState.getCentraladdress(),serverState.getCentralport(),change);
 			Config config=serverState.getConfig();
 			Map<String,LocalChatroomInfo> localChatroomInfoMap = ServerState.getInstance().getLocalChatroomInfoMap();
 			LocalChatroomInfo localChatroomInfo=localChatroomInfoMap.get(roomid);

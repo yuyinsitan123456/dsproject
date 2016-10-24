@@ -36,7 +36,7 @@ public class AuthorizeServerState {
 		return serverInfoList;
 	}
 
-	public synchronized void setServerInfoList(List<CurrentServerInfo> serverInfoList) {
+	public void setServerInfoList(List<CurrentServerInfo> serverInfoList) {
 		this.serverInfoList = serverInfoList;
 	}
 
@@ -44,19 +44,19 @@ public class AuthorizeServerState {
 		return userInfoMap;
 	}
 
-	public synchronized void setUserInfoMap(Map<String,AvailableUserInfo> userInfoMap) {
+	public void setUserInfoMap(Map<String,AvailableUserInfo> userInfoMap) {
 		this.userInfoMap = userInfoMap;
 	}
 
-	public synchronized void addUser(AvailableUserInfo userInfo) {
+	public void addUser(AvailableUserInfo userInfo) {
 		userInfoMap.put(userInfo.getName(),userInfo);
 	}
 
-	public synchronized void addServerInfo(CurrentServerInfo currentServerInfo) {
+	public void addServerInfo(CurrentServerInfo currentServerInfo) {
 		serverInfoList.add(currentServerInfo);
 	}
 
-	public synchronized void deleteServerInfo(CurrentServerInfo currentServerInfo) {
+	public void deleteServerInfo(CurrentServerInfo currentServerInfo) {
 		serverInfoList.remove(currentServerInfo);
 	}
 
@@ -69,14 +69,9 @@ public class AuthorizeServerState {
 		}
 	}
 
-	public synchronized void deleteServers(Set<String> noworkserverids) {
+	public void deleteServers(Set<String> noworkserverids) {
 		for(String noworkserverid:noworkserverids){
 			deleteServer(noworkserverid);
-			for (String username:userInfoMap.keySet()){
-				if(noworkserverid.equals(userInfoMap.get(username).getServer())){
-					userInfoMap.get(username).setServer("");
-				}
-			}
 		}
 	}
 
@@ -89,13 +84,13 @@ public class AuthorizeServerState {
 		}
 	}
 
-	public synchronized void changeworkstates() {
+	public void changeworkstates() {
 		for(CurrentServerInfo currentServerInfo:serverInfoList){
 			currentServerInfo.setWork(false);
 		}
 	}
 
-	public synchronized void changeuserstate(String username,String serverid) {
+	public void changeuserstate(String username,String serverid) {
 		if(serverInfoList.size()!=0){
 			for(CurrentServerInfo serverInfo:serverInfoList){
 				if(serverInfo.getServerid().equals(userInfoMap.get(username).getServer())){

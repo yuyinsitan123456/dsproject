@@ -74,7 +74,7 @@ public class AuthorizeServerState {
 			deleteServer(noworkserverid);
 			for (String username:userInfoMap.keySet()){
 				if(noworkserverid.equals(userInfoMap.get(username).getServer())){
-					userInfoMap.get(username).setServer("");
+					
 				}
 			}
 		}

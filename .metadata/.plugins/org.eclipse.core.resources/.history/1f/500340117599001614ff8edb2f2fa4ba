@@ -34,7 +34,6 @@ public class Heartbeat extends Thread {
 			AuthorizeServerState.getInstance().changeworkstates();
 
 			List<CurrentServerInfo> serverList=AuthorizeServerState.getInstance().getServerInfoList();
-			
 			for (CurrentServerInfo serverInfo : serverList) {
 				String hostName = serverInfo.getServerAddress();
 				int serverPort = serverInfo.getCoordinationPort();

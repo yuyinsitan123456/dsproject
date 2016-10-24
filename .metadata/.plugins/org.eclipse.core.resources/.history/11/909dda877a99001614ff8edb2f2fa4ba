@@ -262,7 +262,7 @@ public class ManagingThread extends Thread {
 			String roomid = (String) message.get("roomid");
 			String identity = (String) message.get("identity");
 			String username = (String) message.get("username");
-			JSONObject change=new Message().getChange(username, ServerState.getInstance().getConfig().getServerid());
+			JSONObject change=new Message().getChange(username,serverInfo.getServerid());
 			sendCoorMessage(serverState.getCentraladdress(),serverState.getCentralport(),change);
 			Config config=serverState.getConfig();
 			Map<String,LocalChatroomInfo> localChatroomInfoMap = ServerState.getInstance().getLocalChatroomInfoMap();

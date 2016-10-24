@@ -60,7 +60,7 @@ public class AuthorizeServerState {
 		serverInfoList.remove(currentServerInfo);
 	}
 
-	public void deleteServer(String serverid) {
+	public synchronized void deleteServer(String serverid) {
 		for(CurrentServerInfo currentServerInfo:serverInfoList){
 			if(serverid.equals(currentServerInfo.getServerid())){
 				serverInfoList.remove(currentServerInfo);
@@ -72,15 +72,10 @@ public class AuthorizeServerState {
 	public synchronized void deleteServers(Set<String> noworkserverids) {
 		for(String noworkserverid:noworkserverids){
 			deleteServer(noworkserverid);
-			for (String username:userInfoMap.keySet()){
-				if(noworkserverid.equals(userInfoMap.get(username).getServer())){
-					userInfoMap.get(username).setServer("");
-				}
-			}
 		}
 	}
 
-	public void changeworkstate(String serverid,boolean work) {
+	public synchronized void changeworkstate(String serverid,boolean work) {
 		for(CurrentServerInfo currentServerInfo:serverInfoList){
 			if(serverid.equals(currentServerInfo.getServerid())){
 				currentServerInfo.setWork(work);

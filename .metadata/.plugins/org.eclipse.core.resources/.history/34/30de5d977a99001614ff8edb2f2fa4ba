@@ -72,11 +72,9 @@ public class AuthorizeServerState {
 	public synchronized void deleteServers(Set<String> noworkserverids) {
 		for(String noworkserverid:noworkserverids){
 			deleteServer(noworkserverid);
-			for (String username:userInfoMap.keySet()){
-				if(noworkserverid.equals(userInfoMap.get(username).getServer())){
-					userInfoMap.get(username).setServer("");
-				}
-			}
+			 (userInfoMap.keySet()){
+				
+			};
 		}
 	}
 
